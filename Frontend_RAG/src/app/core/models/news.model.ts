@@ -1,15 +1,15 @@
 export interface NewsArticle {
     title: string;
-    link: string;
-    snippet?: string;
-    photo_url?: string;
-    published_datetime_utc?: string;
-    source_name?: string;
-    source_logo_url?: string;
+    url: string;
+    category: string;
 }
 
 export interface NewsResponse {
-    status: string;
+    status: boolean;
     request_id?: string;
     data: NewsArticle[];
+}
+
+export interface NewsSummary {
+    summary_text: string;
 }

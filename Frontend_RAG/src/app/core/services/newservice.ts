@@ -1,14 +1,14 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-import { NewsResponse } from "../models/news.model";
+import { NewsResponse, NewsSummary } from "../models/news.model";
 import { environment } from "../../../environments/environment";
 
 @Injectable({
     providedIn: 'root'
 })
 export class NewsService {
-    private readonly apiUrl = `${environment.apiBaseUrl}${environment.endpoints.newsIngestion}`;
+    private readonly apiUrl = `${environment.apiBaseUrl}${environment.endpoints.articles}`;
 
     constructor(private http: HttpClient) { }
     getNews(query: string, limit: number) {
