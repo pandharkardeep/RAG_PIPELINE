@@ -51,3 +51,7 @@ logs/
 # OS
 Thumbs.db
 SYSTEM_DESIGN.md
+
+# Backend ignores
+Backend/ignores/
+Backend/NEWS_data

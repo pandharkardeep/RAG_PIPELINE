@@ -19,7 +19,7 @@ ALLOWED_ORIGINS = [
 RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
 RAPIDAPI_HOST = os.getenv("RAPIDAPI_HOST")
 RAPIDAPI_URL = os.getenv("RAPIDAPI_URL")
-
+PINECONE_KEY = os.getenv("PINECONE_API_KEY")
 # Server Configuration
 HOST = "0.0.0.0"
 PORT = 8000

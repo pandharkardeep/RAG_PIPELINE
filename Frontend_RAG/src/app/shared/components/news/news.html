@@ -3,7 +3,7 @@
     <h1> Newss</h1>
     <div *ngFor="let News of newsData?.data">
         <h2>{{News.title}}</h2>
-        <a href="News.url">Read More</a>
+        <a href="{{News.link}}">Read More</a>
         <!-- <img [src]="News.photo_url" alt="{{News.title}}"> -->
     </div>
 </div>
