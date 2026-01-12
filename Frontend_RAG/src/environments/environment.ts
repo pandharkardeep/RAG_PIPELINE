@@ -6,6 +6,7 @@ export const environment = {
     apiBaseUrl: 'http://localhost:8000',
     apiVersion: 'v1',
     endpoints: {
-        articles: '/articles'
+        articles: '/articles',
+        tweets: '/tweets/generate'
     }
 };

@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { NewsService } from '../../../core/services/newservice';
+import { NewsService } from '../../../core/services/news.service';
 import { NewsSummary, NewsResponse } from '../../../core/models/news.model';
-import { CommonModule, NgFor, NgForOf } from '@angular/common';
+
 
 @Component({
     selector: 'app-news',
-    imports: [NgFor, NgForOf, CommonModule],
+    imports: [],
     templateUrl: './news.html',
     styleUrl: './news.scss',
 })
@@ -18,10 +18,10 @@ export class News implements OnInit {
     constructor(private news: NewsService, private route: ActivatedRoute) { }
 
     ngOnInit(): void {
-        this.route.queryParams.subscribe((params: any) =>{
+        this.route.queryParams.subscribe((params: any) => {
             this.query = params.query;
             this.limit = params.limit;
-       
+
             this.news.getNews(this.query, this.limit).subscribe({
                 next: (res: NewsResponse) => {
                     this.newsData = res;

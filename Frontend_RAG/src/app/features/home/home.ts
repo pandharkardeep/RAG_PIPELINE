@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { NewsService } from '../../core/services/newservice';
+import { NewsService } from '../../core/services/news.service';
 import { NewsArticle } from '../../core/models/news.model';
 
 @Component({
@@ -21,6 +21,15 @@ export class Home {
       queryParams: {
         query: this.query,
         limit: this.limit
+      }
+    });
+  }
+
+  showTweets(): void {
+    this.router.navigate(['/tweets'], {
+      queryParams: {
+        query: this.query,
+        count: 3  // default count, can be made configurable
       }
     });
   }

@@ -1,0 +1,86 @@
+<div class="tweets-container">
+    <div class="header">
+        <h1>Generated Tweets</h1>
+        <p class="query-text" *ngIf="query">Query: <strong>{{ query }}</strong></p>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-container" *ngIf="isLoading">
+        <mat-spinner></mat-spinner>
+        <p>Generating tweets... This may take a moment.</p>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-container" *ngIf="errorMessage && !isLoading">
+        <mat-card class="error-card">
+            <mat-card-content>
+                <h3>⚠️ Error</h3>
+                <p>{{ errorMessage }}</p>
+            </mat-card-content>
+        </mat-card>
+    </div>
+
+    <!-- Tweets Display -->
+    <div class="tweets-grid" *ngIf="tweetData && tweetData.success && !isLoading">
+        <mat-card class="tweet-card" *ngFor="let tweet of tweetData.results; let i = index">
+            <mat-card-header>
+                <div class="tweet-header">
+                    <span class="tweet-number">Tweet #{{ i + 1 }}</span>
+                </div>
+            </mat-card-header>
+            <mat-card-content>
+                <p class="tweet-text">{{ tweet }}</p>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Sources Section -->
+        <div class="sources-section" *ngIf="tweetData.sources && tweetData.sources.length > 0">
+            <h3>📰 Sources</h3>
+            <mat-card class="sources-card">
+                <mat-card-content>
+                    <mat-chip-set>
+                        <mat-chip *ngFor="let source of tweetData.sources">
+                            {{ source.filename }} ({{ source.relevance_score | number:'1.2-2' }})
+                        </mat-chip>
+                    </mat-chip-set>
+                </mat-card-content>
+            </mat-card>
+        </div>
+
+        <!-- Pipeline Stats (Optional) -->
+        <div class="stats-section" *ngIf="tweetData.pipeline_stats">
+            <h3>📊 Pipeline Statistics</h3>
+            <mat-card class="stats-card">
+                <mat-card-content>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Articles Fetched:</span>
+                            <span class="stat-value">{{ tweetData.pipeline_stats.articles_fetched }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Articles Scraped:</span>
+                            <span class="stat-value">{{ tweetData.pipeline_stats.articles_scraped }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Chunks Created:</span>
+                            <span class="stat-value">{{ tweetData.pipeline_stats.chunks_created }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Vectors Stored:</span>
+                            <span class="stat-value">{{ tweetData.pipeline_stats.vectors_stored }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Search Results:</span>
+                            <span class="stat-value">{{ tweetData.pipeline_stats.search_results }}</span>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </div>
+
+    <!-- No Results -->
+    <div class="no-results" *ngIf="!tweetData && !isLoading && !errorMessage">
+        <p>No tweets to display. Please provide a query parameter.</p>
+    </div>
+</div>

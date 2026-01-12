@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { News } from './shared/components/news/news';
+import { Tweets } from './shared/components/tweets/tweets';
 import { Home } from './features/home/home';
 
 export const routes: Routes = [
@@ -10,5 +11,9 @@ export const routes: Routes = [
     {
         path: 'articles',
         component: News
+    },
+    {
+        path: 'tweets',
+        component: Tweets
     }
 ];

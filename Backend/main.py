@@ -1,6 +1,6 @@
 from fastapi import FastAPI, exceptions
 from fastapi.middleware.cors import CORSMiddleware
-from routers import articles
+from routers import articles, tweets
 import uvicorn
 
 app = FastAPI()
@@ -13,6 +13,7 @@ app.add_middleware(
 )
     
 app.include_router(articles.router)
+app.include_router(tweets.router)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

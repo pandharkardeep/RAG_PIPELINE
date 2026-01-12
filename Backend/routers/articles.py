@@ -14,7 +14,7 @@ from services.chunk import chunk
 from services.emb_service import emb_service
 from services.pinecone_service import PineconeService
 
-router = APIRouter()
+router = APIRouter(prefix='/articles')
 
 # Initialize services globally to avoid recreating them on each request
 try:
@@ -30,7 +30,7 @@ try:
 except Exception as e:
     print(f"⚠ Warning: Could not initialize")
 
-@router.get("/articles")
+@router.get("")
 def news_ingestion(query: str, limit: int = 10):
     """
     Fetch news articles, chunk them, generate embeddings, and store in Pinecone
@@ -39,7 +39,7 @@ def news_ingestion(query: str, limit: int = 10):
     # Return the original response
     return nar.get_ingestion()
 
-@router.post("/articles")
+@router.post("/ingest")
 def news_addition(query: str, limit: int = 10):
     nar = news_article_retrieval(query, limit)
     nar.retrieve()
@@ -47,7 +47,7 @@ def news_addition(query: str, limit: int = 10):
     ch = chunk()
     chunks_data = ch.textsplit()
     
-    # Step 3 & 4: Generate embeddings and store in Pinecone
+    # Step 3 & 4: Generate embeddings and store Fin Pinecone
     if embedder and pinecone_service and chunks_data:
         try:
             texts = [chunk_data['text'] for chunk_data in chunks_data]
