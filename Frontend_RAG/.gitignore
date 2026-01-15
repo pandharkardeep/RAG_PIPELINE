@@ -5,7 +5,8 @@
 /tmp
 /out-tsc
 /bazel-out
-
+*.pdf
+*.PDF
 # Node
 /node_modules
 npm-debug.log

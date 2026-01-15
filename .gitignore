@@ -51,6 +51,8 @@ logs/
 # OS
 Thumbs.db
 SYSTEM_DESIGN.md
+*.pdf
+*.PDF
 
 # Backend ignores
 Backend/ignores/

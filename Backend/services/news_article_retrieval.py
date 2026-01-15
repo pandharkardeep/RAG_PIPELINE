@@ -23,7 +23,6 @@ class news_article_retrieval:
         """
         Fetch news articles with fallback to cached CSV data
         """
-        print("News Ingested")
         
         try:
             # Suppress HTTP error messages from GoogleNews library
@@ -33,17 +32,25 @@ class news_article_retrieval:
                 googleNews = GoogleNews(period='7d', lang='en')
                 googleNews.search(self.query)
                 all_results = []
-                
+                seen_titles = set()
                 # Try to get multiple pages, but stop if we hit rate limit
-                for i in range(1, 10):  # Reduced from 50 to 10 to avoid rate limits
+                for i in range(1, 30):  # Reduced from 50 to 10 to avoid rate limits
                     try:
                         googleNews.getpage(i)
                         result = googleNews.results()
-                        
-                        if result:
-                            all_results.extend(result)
+                        if not result:
+                            break
+                        for item in result:
+                            if item['title'] not in seen_titles:
+                                seen_titles.add(item['title'])
+                                all_results.append(item)
+                            if len(all_results) >= limit:
+                                break
                         else:
-                            break  # Stop if no more results
+                            break 
+                     # Stop if no more results
+                        if len(all_results) >= limit:
+                            break
                     except Exception:
                         break  # Stop on any error (including rate limit)
             
@@ -141,7 +148,7 @@ class news_article_retrieval:
         os.makedirs(folder_name, exist_ok=True)
 
         for index, row in self.df.iterrows():
-            print("o", end = "")
+            #print("o", end = "")
             with open(os.path.join(folder_name, f"description_{index + 1}.txt"), "w", encoding="utf-8") as f:
                 f.write(row['description'])
 

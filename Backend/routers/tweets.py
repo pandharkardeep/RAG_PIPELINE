@@ -62,14 +62,14 @@ def generate_tweets(query: str, count: int = 3, top_k: int = 5, fetch_limit: int
     if not query or query.strip() == "":
         raise HTTPException(status_code=400, detail="Query parameter cannot be empty")
     
-    if count < 1 or count > 10:
-        raise HTTPException(status_code=400, detail="Count must be between 1 and 10")
+    if count < 1 or count > 50:
+        raise HTTPException(status_code=400, detail="Count must be between 1 and 50")
     
-    if top_k < 1 or top_k > 10:
-        raise HTTPException(status_code=400, detail="top_k must be between 1 and 10")
+    if top_k < 1 or top_k > 50:
+        raise HTTPException(status_code=400, detail="top_k must be between 1 and 50")
     
-    if fetch_limit < 1 or fetch_limit > 20:
-        raise HTTPException(status_code=400, detail="fetch_limit must be between 1 and 20")
+    if fetch_limit < 1 or fetch_limit > 50:
+        raise HTTPException(status_code=400, detail="fetch_limit must be between 1 and 50")
     
     # Check if services are available
     if llm_service is None:

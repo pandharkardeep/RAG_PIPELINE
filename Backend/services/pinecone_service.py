@@ -2,6 +2,9 @@ from pinecone import Pinecone, ServerlessSpec
 from config import PINECONE_KEY
 import time
 
+import re
+
+
 class PineconeService:
     def __init__(self, index_name="news-articles", dimension=384):
         """
@@ -15,7 +18,33 @@ class PineconeService:
         self.index_name = index_name
         self.dimension = dimension
         self.index = None
-        
+    
+    def clean_article_text(text: str) -> str:
+        if not text:
+            return ""
+
+        # Normalize whitespace
+        text = re.sub(r"\s+", " ", text).strip()
+
+    # Remove common junk patterns (tune this list)
+        junk_patterns = [
+            r"\bsubscribe\b",
+            r"\bsign up\b",
+            r"\bcookie\b",
+            r"\badvertisement\b",
+            r"\ball rights reserved\b",
+        ]
+        for pat in junk_patterns:
+            text = re.sub(pat, "", text, flags=re.I)
+
+        # Remove excessive repeated "he said / she said" style clutter
+        text = re.sub(r"\b(he|she|they)\s+(said|told)\b", "", text, flags=re.I)
+
+        # Re-normalize spacing after removals
+        text = re.sub(r"\s+", " ", text).strip()
+
+        return text
+
     def create_index(self, metric="cosine", cloud="aws", region="us-east-1"):
         """
         Create a new Pinecone index if it doesn't exist
@@ -61,9 +90,10 @@ class PineconeService:
         Args:
             vectors (list): List of tuples (id, embedding, metadata)
         """
+        #print(vectors)
         if self.index is None:
             self.get_index()
-        
+        self.clean_article_text(vectors['metadata']['text'])
         # Upsert in batches of 100
         batch_size = 100
         for i in range(0, len(vectors), batch_size):

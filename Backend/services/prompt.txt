@@ -1,0 +1,10 @@
+You are writing a HIGH-QUALITY NEWS INTELLIGENCE Twitter thread.
+
+Style rules:
+- No generic fluff like "this is important" without explaining why
+- No repeated phrases
+- No moralizing (stay analytical)
+- Must be coherent as ONE thread
+
+Now write the thread.
+

@@ -1,6 +1,7 @@
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
+import os
 
 
 class LLMService:
@@ -8,7 +9,10 @@ class LLMService:
     Service for generating tweets using HuggingFace LLM models
     Uses on-demand loading for better resource management in deployed systems
     """
-    
+    def load_prompt(self, path: str) -> str:
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+
     def __init__(self, model_name: str = "LiquidAI/LFM2.5-1.2B-Instruct"):
         """
         Initialize the LLM service
@@ -77,24 +81,13 @@ class LLMService:
                 context_section += f"Article {i}:\n{article_text}\nSource: {filename}\n\n"
             
             context_section += f"\nWrite a Twitter thread consisting of exactly {count} tweets about the topic below.\n {query}"
-            context_section += f"""
-            Critical rules:
-- All tweets must form ONE continuous, coherent thread
-- Each tweet must naturally follow from the previous one
-- Do NOT restart context or reintroduce the topic
-- Do NOT repeat the same facts, names, or phrases
-- Each tweet should add a new angle, detail, or implication
-- Use natural human transitions (e.g., "This matters because…", "What follows from this…", "Zooming out…")
-- Conversational, non-headline tone
-- No numbering (no "Tweet 1", "Tweet 2", etc.)
-- Each tweet must be under {max_length} characters
-- Don't output anything other that the thread itself. No extra text whatsoever
-- It should have a nice intro, explaining everything about situation in short manner. 
-Tweet1:"""
+            print(os.getcwd())
+            context_section += self.load_prompt("D:\\Projects\\RAG_PIPELINE\\Backend\\services\\prompt.txt")
+            context_section += f"Output rules:\n- Return EXACTLY {count} tweets\n- Each tweet must be under {max_length} characters\n- Do NOT number tweets"
         else:
+            print("Fallback to original prompt")
             # Fallback to original prompt if no context
             context_section = f"""Generate {count} engaging tweets about: {query}
-
 Each tweet should be:
 - Informative and engaging
 - Maximum 280 characters
