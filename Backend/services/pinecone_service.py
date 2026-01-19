@@ -90,16 +90,23 @@ class PineconeService:
         Args:
             vectors (list): List of tuples (id, embedding, metadata)
         """
-        #print(vectors)
         if self.index is None:
             self.get_index()
-        self.clean_article_text(vectors['metadata']['text'])
+        
+        # Clean metadata text for each vector
+        cleaned_vectors = []
+        for vector_id, embedding, metadata in vectors:
+            # Clean the text in metadata if it exists
+            if 'text' in metadata and metadata['text']:
+                metadata['text'] = PineconeService.clean_article_text(metadata['text'])
+            cleaned_vectors.append((vector_id, embedding, metadata))
+        
         # Upsert in batches of 100
         batch_size = 100
-        for i in range(0, len(vectors), batch_size):
-            batch = vectors[i:i + batch_size]
+        for i in range(0, len(cleaned_vectors), batch_size):
+            batch = cleaned_vectors[i:i + batch_size]
             self.index.upsert(vectors=batch)
-            print(f"Upserted {min(i + batch_size, len(vectors))}/{len(vectors)} vectors")
+            print(f"Upserted {min(i + batch_size, len(cleaned_vectors))}/{len(cleaned_vectors)} vectors")
     
     def query_similar(self, query_embedding, top_k=5, include_metadata=True):
         """
@@ -135,3 +142,38 @@ class PineconeService:
             self.get_index()
         self.index.delete(delete_all=True)
         print(f"All vectors deleted from index '{self.index_name}'")
+    
+    def delete_by_metadata_filter(self, filter_dict):
+        """
+        Delete vectors by metadata filter
+        
+        Args:
+            filter_dict (dict): Metadata filter to match vectors for deletion
+            
+        Returns:
+            int: Number of vectors deleted (estimated)
+        """
+        if self.index is None:
+            self.get_index()
+        
+        try:
+            # First, query to see how many vectors match
+            # We'll use a dummy vector for counting
+            stats_before = self.get_stats()
+            
+            # Delete by filter
+            self.index.delete(filter=filter_dict)
+            
+            # Give Pinecone a moment to process the deletion
+            import time
+            time.sleep(2)
+            
+            stats_after = self.get_stats()
+            deleted_count = stats_before.get('total_vector_count', 0) - stats_after.get('total_vector_count', 0)
+            
+            print(f"Deleted {deleted_count} vectors matching filter: {filter_dict}")
+            return deleted_count
+        except Exception as e:
+            print(f"Error deleting by metadata filter: {e}")
+            raise
+

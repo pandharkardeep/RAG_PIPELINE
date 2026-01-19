@@ -5,6 +5,7 @@ from services.pinecone_service import PineconeService
 from services.news_article_retrieval import news_article_retrieval
 from services.chunk import chunk
 import time
+import uuid
 
 router = APIRouter(prefix='/tweets')
 
@@ -93,6 +94,8 @@ def generate_tweets(query: str, count: int = 3, top_k: int = 5, fetch_limit: int
         }
     
     try:
+        # Generate unique session ID
+        session_id = str(uuid.uuid4())[:8]  # Short UUID for readability
         timestamp = int(time.time())
         pipeline_stats = {
             "articles_fetched": 0,
@@ -104,12 +107,13 @@ def generate_tweets(query: str, count: int = 3, top_k: int = 5, fetch_limit: int
         
         print(f"\n{'='*60}")
         print(f"Enhanced RAG Tweet Generation for: '{query}'")
+        print(f"Session ID: {session_id}")
         print(f"Fetching {fetch_limit} articles, generating {count} tweets")
         print(f"{'='*60}\n")
         
         # Step 1: Fetch fresh articles
         print("[1/7] Fetching fresh news articles...")
-        nar = news_article_retrieval(query=query, limit=fetch_limit)
+        nar = news_article_retrieval(query=query, limit=fetch_limit, session_id=session_id)
         ingestion_result = nar.get_ingestion()
         
         if not ingestion_result.get('success', False):
@@ -138,6 +142,11 @@ def generate_tweets(query: str, count: int = 3, top_k: int = 5, fetch_limit: int
                 # Step 4: Generate embeddings
                 print("\n[4/7] Generating embeddings...")
                 texts = [chunk_data['text'] for chunk_data in chunks_data]
+                print(f"DEBUG: Extracted {len(texts)} texts from chunks_data")
+                print(f"DEBUG: chunks_data type: {type(chunks_data)}")
+                if len(chunks_data) > 0:
+                    print(f"DEBUG: First chunk type: {type(chunks_data[0])}")
+                    print(f"DEBUG: First chunk keys: {chunks_data[0].keys() if isinstance(chunks_data[0], dict) else 'Not a dict'}")
                 
                 # Generate embeddings in batches
                 batch_size = 32
@@ -146,9 +155,13 @@ def generate_tweets(query: str, count: int = 3, top_k: int = 5, fetch_limit: int
                 for i in range(0, len(texts), batch_size):
                     batch_texts = texts[i:i + batch_size]
                     batch_embeddings = embedder.generate_embeddings(batch_texts)
+                    print(f"DEBUG: batch_embeddings type: {type(batch_embeddings)}, shape: {batch_embeddings.shape if hasattr(batch_embeddings, 'shape') else 'no shape'}")
                     all_embeddings.extend(batch_embeddings)
                 
                 print(f"✓ Generated {len(all_embeddings)} embeddings")
+                print(f"DEBUG: all_embeddings type: {type(all_embeddings)}")
+                if len(all_embeddings) > 0:
+                    print(f"DEBUG: First embedding type: {type(all_embeddings[0])}")
                 
                 # Step 5: Store in Pinecone
                 print("\n[5/7] Storing vectors in Pinecone...")
@@ -156,15 +169,23 @@ def generate_tweets(query: str, count: int = 3, top_k: int = 5, fetch_limit: int
                 
                 for idx, (chunk_data, embedding) in enumerate(zip(chunks_data, all_embeddings)):
                     vector_id = f"tweet_{query.replace(' ', '_')}_{chunk_data['doc_id']}_{chunk_data['chunk_id']}_{timestamp}"
+                    
+                    # Convert embedding to list - handle both numpy array and list
+                    if hasattr(embedding, 'tolist'):
+                        embedding_list = embedding.tolist()
+                    else:
+                        embedding_list = list(embedding)
+                    
                     metadata = {
                         'text': chunk_data['text'][:1000],  # Limit text size for metadata
                         'filename': chunk_data['filename'],
                         'chunk_id': chunk_data['chunk_id'],
                         'doc_id': chunk_data['doc_id'],
                         'query': query,
-                        'timestamp': timestamp
+                        'timestamp': timestamp,
+                        'session_id': session_id  # Add session_id for cleanup
                     }
-                    vectors.append((vector_id, embedding.tolist(), metadata))
+                    vectors.append((vector_id, embedding_list, metadata))
                 
                 # Upload to Pinecone
                 pinecone_service.upsert_vectors(vectors)
@@ -172,7 +193,10 @@ def generate_tweets(query: str, count: int = 3, top_k: int = 5, fetch_limit: int
                 print(f"✓ Stored {pipeline_stats['vectors_stored']} vectors in Pinecone")
                 
             except Exception as chunk_error:
+                import traceback
                 print(f"⚠ Chunking/embedding/storage failed: {chunk_error}. Will search existing content.")
+                print("DEBUG: Full traceback:")
+                traceback.print_exc()
         
         # Step 6: Generate query embedding and search Pinecone
         print("\n[6/7] Searching Pinecone for relevant articles...")
@@ -225,6 +249,7 @@ def generate_tweets(query: str, count: int = 3, top_k: int = 5, fetch_limit: int
         return {
             "success": True,
             "query": query,
+            "session_id": session_id,  # Return session_id for client reference
             "count": len(tweets),
             "results": tweets,
             "sources": sources,

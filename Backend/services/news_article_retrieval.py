@@ -3,14 +3,16 @@ from bs4 import BeautifulSoup
 import re, os
 import time, random
 import io
+import json
 from contextlib import redirect_stderr
 import pandas as pd
 from GoogleNews import GoogleNews
 class news_article_retrieval:
     
-    def __init__(self, query:str, limit:int):
+    def __init__(self, query:str, limit:int, session_id:str = None):
         self.query = query
         self.df = None
+        self.session_id = session_id
         self.news_ingest = self.news_ingestion(limit)
 
     def get_data(self):
@@ -147,10 +149,34 @@ class news_article_retrieval:
         folder_name = "NEWS_data"
         os.makedirs(folder_name, exist_ok=True)
 
+        # Store filenames created for session manifest
+        created_files = []
+        
         for index, row in self.df.iterrows():
-            #print("o", end = "")
-            with open(os.path.join(folder_name, f"description_{index + 1}.txt"), "w", encoding="utf-8") as f:
+            # Include session_id in filename if provided
+            if self.session_id:
+                filename = f"{self.session_id}_description_{index + 1}.txt"
+            else:
+                filename = f"description_{index + 1}.txt"
+            
+            file_path = os.path.join(folder_name, filename)
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(row['description'])
+            created_files.append(filename)
+        
+        # Create session manifest file if session_id is provided
+        if self.session_id:
+            manifest_data = {
+                "session_id": self.session_id,
+                "query": self.query,
+                "timestamp": time.time(),
+                "article_count": len(self.df),
+                "files": created_files
+            }
+            manifest_path = os.path.join(folder_name, f"session_{self.session_id}.json")
+            with open(manifest_path, "w", encoding="utf-8") as f:
+                json.dump(manifest_data, f, indent=2)
+            print(f"✓ Session manifest created: {manifest_path}")
 
-        print("Descriptions have been saved in the 'NEWS_data' folder.")
+        #print("Descriptions have been saved in the 'NEWS_data' folder.")
 
