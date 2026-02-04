@@ -34,11 +34,9 @@ class cleanup_service:
                 if os.path.isfile(file_path) or os.path.islink(file_path):
                     os.unlink(file_path)
                     deleted_files.append(filename)
-                    print(f"✓ Deleted: {filename}")
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
                     deleted_files.append(filename)
-                    print(f"✓ Deleted directory: {filename}")
             except Exception as e:
                 error_msg = f"Failed to delete {filename}: {str(e)}"
                 errors.append(error_msg)
@@ -189,21 +187,10 @@ class cleanup_service:
         Returns:
             dict: Combined statistics from both cleanup operations
         """
-        print(f"\n{'='*60}")
-        print("Starting comprehensive cleanup...")
-        print(f"{'='*60}\n")
         
-        # Clean NEWS_data folder
-        print("[1/2] Cleaning NEWS_data folder...")
         folder_result = self.cleanup_news_data()
-        
-        # Clean Pinecone vectors
-        print("\n[2/2] Cleaning Pinecone vectors...")
         pinecone_result = self.cleanup_pinecone_all(pinecone_service)
         
-        print(f"\n{'='*60}")
-        print("Cleanup completed!")
-        print(f"{'='*60}\n")
         
         return {
             "success": folder_result["success"] and pinecone_result["success"],

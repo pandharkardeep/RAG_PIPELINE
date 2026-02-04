@@ -1,0 +1,65 @@
+<div class="thread-formatter-container">
+    <div class="header">
+        <h1>🧵 Thread Formatter</h1>
+        <p class="subtitle">Convert your long text into a Twitter/X thread</p>
+    </div>
+
+    <div class="formatter-content">
+        <div class="input-section">
+            <div class="input-header">
+                <label for="inputText">Your Text</label>
+                <span class="char-count">{{ totalChars }} characters</span>
+            </div>
+            <textarea 
+                id="inputText"
+                [(ngModel)]="inputText"
+                placeholder="Paste your long text here and we'll format it into a thread..."
+                rows="10"></textarea>
+
+            <div class="settings">
+                <div class="setting-item">
+                    <label>Max characters per tweet:</label>
+                    <input type="number" [(ngModel)]="maxChars" min="100" max="280" />
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-primary" (click)="formatThread()" [disabled]="!inputText.trim()">
+                    ✨ Format Thread
+                </button>
+                <button class="btn-secondary" (click)="clearAll()" *ngIf="inputText">
+                    🗑️ Clear
+                </button>
+            </div>
+        </div>
+
+        <div class="output-section" *ngIf="isFormatted && formattedThreads.length > 0">
+            <div class="output-header">
+                <h2>Formatted Thread ({{ formattedThreads.length }} tweets)</h2>
+                <button class="btn-copy-all" (click)="copyAllThreads()">
+                    📋 Copy All
+                </button>
+            </div>
+
+            <div class="tweets-list">
+                @for (tweet of formattedThreads; track $index) {
+                    <div class="tweet-card">
+                        <div class="tweet-header">
+                            <span class="tweet-number">{{ $index + 1 }}/{{ formattedThreads.length }}</span>
+                            <span class="tweet-chars">{{ tweet.length }}/{{ maxChars }}</span>
+                        </div>
+                        <p class="tweet-content">{{ tweet }}</p>
+                        <button class="btn-copy" (click)="copyThread($index)">
+                            📋 Copy
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="empty-state" *ngIf="!isFormatted">
+            <div class="empty-icon">🧵</div>
+            <p>Enter your text above and click "Format Thread" to get started</p>
+        </div>
+    </div>
+</div>

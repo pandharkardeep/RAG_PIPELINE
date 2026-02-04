@@ -19,4 +19,9 @@ export class NewsService {
             }
         })
     }
+    downloadNews() {
+        return this.http.get(this.apiUrl + '/export/csv', {
+            responseType: 'blob'
+        })
+    }
 }

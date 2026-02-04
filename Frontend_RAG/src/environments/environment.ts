@@ -7,6 +7,7 @@ export const environment = {
     apiVersion: 'v1',
     endpoints: {
         articles: '/articles',
-        tweets: '/tweets/generate'
+        tweets: '/tweets/generate',
+        cleanup: '/cleanup'
     }
 };

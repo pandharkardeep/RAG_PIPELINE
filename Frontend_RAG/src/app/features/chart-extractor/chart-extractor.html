@@ -1,0 +1,224 @@
+<div class="chart-extractor-container">
+    <div class="header">
+        <h1>📊 Article to Chart</h1>
+        <p class="subtitle">Extract data from articles and generate publication-ready charts for Twitter/X</p>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+        <button 
+            class="tab-btn" 
+            [class.active]="activeTab === 'input'"
+            (click)="activeTab = 'input'">
+            📝 Input
+        </button>
+        <button 
+            class="tab-btn" 
+            [class.active]="activeTab === 'preview'"
+            (click)="activeTab = 'preview'"
+            [disabled]="!hasExtractedData">
+            🔍 Data Preview
+        </button>
+        <button 
+            class="tab-btn" 
+            [class.active]="activeTab === 'charts'"
+            (click)="activeTab = 'charts'"
+            [disabled]="!hasCharts">
+            📈 Charts
+        </button>
+    </div>
+
+    <!-- Messages -->
+    <div class="message error" *ngIf="errorMessage">
+        ❌ {{ errorMessage }}
+    </div>
+    <div class="message success" *ngIf="successMessage">
+        ✅ {{ successMessage }}
+    </div>
+
+    <!-- Input Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'input'">
+        <div class="input-section">
+            <div class="input-group">
+                <div class="input-header">
+                    <label for="inputText">Article Text</label>
+                    <span class="char-count">{{ totalChars }} characters</span>
+                </div>
+                <textarea 
+                    id="inputText"
+                    [(ngModel)]="inputText"
+                    placeholder="Paste the full article text here. The system will extract key statistics, comparisons, percentages, and time series data..."
+                    rows="12"></textarea>
+            </div>
+
+            <div class="separator">
+                <span>OR</span>
+            </div>
+
+            <div class="input-group">
+                <label for="inputUrl">Article URL</label>
+                <input 
+                    type="url" 
+                    id="inputUrl"
+                    [(ngModel)]="inputUrl"
+                    placeholder="https://example.com/article..."
+                />
+            </div>
+
+            <div class="action-buttons">
+                <button 
+                    class="btn-primary" 
+                    (click)="runFullPipeline()" 
+                    [disabled]="isLoading || (!inputText.trim() && !inputUrl.trim())">
+                    {{ isLoading ? '⏳ Processing...' : '🚀 Extract & Generate' }}
+                </button>
+                <button 
+                    class="btn-secondary" 
+                    (click)="extractData()" 
+                    [disabled]="isExtracting || (!inputText.trim() && !inputUrl.trim())">
+                    {{ isExtracting ? '⏳ Extracting...' : '🔍 Extract Only' }}
+                </button>
+                <button class="btn-outline" (click)="clearAll()" *ngIf="inputText || inputUrl">
+                    🗑️ Clear
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Preview Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'preview' && hasExtractedData">
+        <div class="preview-section">
+            <div class="preview-header">
+                <h2>Extracted Data ({{ dataPreview.length }} items)</h2>
+                <p class="hint">Review the extracted data before generating charts</p>
+            </div>
+
+            <div class="data-cards">
+                @for (item of dataPreview; track $index) {
+                    <div class="data-card" [ngClass]="'type-' + item.type">
+                        <div class="card-header">
+                            <span class="type-badge">{{ item.type }}</span>
+                            <span class="metric">{{ item.metric || item.category || item.label || item.fact }}</span>
+                        </div>
+                        <div class="card-body">
+                            @if (item.type === 'comparison' || item.type === 'breakdown') {
+                                <div class="data-table">
+                                    @for (entry of item.data | keyvalue; track entry.key) {
+                                        <div class="data-row">
+                                            <span class="key">{{ entry.key }}</span>
+                                            <span class="value">{{ entry.value }}{{ item.unit }}</span>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            @if (item.type === 'time_series') {
+                                <div class="time-series-preview">
+                                    @for (point of item.data; track $index) {
+                                        <span class="point">{{ point.year }}: {{ point.value }}</span>
+                                    }
+                                </div>
+                            }
+                            @if (item.type === 'key_fact') {
+                                <div class="key-fact">
+                                    <span class="fact-value">{{ item.value }}</span>
+                                    <span class="fact-context" *ngIf="item.context">{{ item.context }}</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Chart Type Selection -->
+            <div class="chart-type-selection" *ngIf="chartTypes.length > 0">
+                <h3>Select Chart Types (optional)</h3>
+                <p class="hint">Leave unselected to auto-generate appropriate charts</p>
+                <div class="chart-type-grid">
+                    @for (type of chartTypes; track type.id) {
+                        <button 
+                            class="chart-type-btn"
+                            [class.selected]="isChartTypeSelected(type.id)"
+                            (click)="toggleChartType(type.id)">
+                            <span class="type-name">{{ type.name }}</span>
+                            <span class="type-desc">{{ type.description }}</span>
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button 
+                    class="btn-primary" 
+                    (click)="generateCharts()" 
+                    [disabled]="isGenerating">
+                    {{ isGenerating ? '⏳ Generating...' : '📊 Generate Charts' }}
+                </button>
+                <button class="btn-outline" (click)="activeTab = 'input'">
+                    ← Back to Input
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'charts' && hasCharts">
+        <div class="charts-section">
+            <div class="charts-header">
+                <h2>Generated Charts ({{ generatedCharts.length }})</h2>
+                <div class="header-actions">
+                    <button class="btn-secondary" (click)="downloadAllCharts()">
+                        📥 Download All
+                    </button>
+                    <button class="btn-outline" (click)="copyAllCaptions()">
+                        📋 Copy All Captions
+                    </button>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                @for (chart of generatedCharts; track $index) {
+                    <div class="chart-card">
+                        <div class="chart-image">
+                            <img [src]="getChartImageUrl(chart.png_base64)" [alt]="chart.alt_text" />
+                        </div>
+                        <div class="chart-info">
+                            <span class="chart-type-badge">{{ chart.chart_type }}</span>
+                            <p class="caption">{{ chart.caption }}</p>
+                            <p class="alt-text">Alt: {{ chart.alt_text }}</p>
+                        </div>
+                        <div class="chart-actions">
+                            <button class="btn-sm" (click)="downloadChart(chart, $index)">
+                                📥 Download
+                            </button>
+                            <button class="btn-sm" (click)="copyCaption(chart.caption)">
+                                📋 Copy Caption
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-outline" (click)="activeTab = 'preview'">
+                    ← Back to Preview
+                </button>
+                <button class="btn-outline" (click)="clearAll()">
+                    🔄 Start New
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="activeTab === 'input' && !inputText && !inputUrl">
+        <div class="empty-icon">📊</div>
+        <h3>Turn Articles into Charts</h3>
+        <p>Paste article text or enter a URL above to extract data and generate publication-ready charts optimized for Twitter/X</p>
+        <ul class="features">
+            <li>✨ Auto-extracts statistics, comparisons, percentages</li>
+            <li>📈 Infers best chart types automatically</li>
+            <li>🐦 Twitter-optimized sizing (1200×675)</li>
+            <li>📝 Generates captions and alt-text</li>
+        </ul>
+    </div>
+</div>

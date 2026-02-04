@@ -1,10 +1,26 @@
 <!-- <h1>News</h1> -->
-<div>
-  <h1> Newss</h1>
+<div class="news-container">
+  <div class="news-header">
+    <h1>News</h1>
+    <button class="export-btn" (click)="exportToCsv()" [disabled]="!newsData?.data || newsData?.data?.length === 0">
+      📥 Export to CSV
+    </button>
+  </div>
+  
+  @if (isLoading) {
+    <div class="loading">Loading articles...</div>
+  }
+  
+  @if (exportStatus) {
+    <div class="export-status" [class.success]="exportStatus.includes('✓')" [class.error]="exportStatus.includes('✗')">
+      {{ exportStatus }}
+    </div>
+  }
+  
   @for (News of newsData?.data; track News) {
-    <div>
+    <div class="news-card">
       <h2>{{News.title}}</h2>
-      <a href="{{News.link}}">Read More</a>
+      <a href="{{News.link}}" target="_blank">Read More</a>
       <!-- <img [src]="News.photo_url" alt="{{News.title}}"> -->
     </div>
   }

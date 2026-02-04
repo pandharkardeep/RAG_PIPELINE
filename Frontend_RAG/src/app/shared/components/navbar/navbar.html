@@ -1,0 +1,28 @@
+<nav class="navbar" [class.collapsed]="isCollapsed">
+    <div class="navbar-header">
+        <span class="logo" *ngIf="!isCollapsed">📰 RAG Pipeline</span>
+        <span class="logo-icon" *ngIf="isCollapsed">📰</span>
+        <button class="toggle-btn" (click)="toggleNavbar()">
+            {{ isCollapsed ? '→' : '←' }}
+        </button>
+    </div>
+
+    <ul class="nav-items">
+        @for (item of navItems; track item.route) {
+            <li>
+                <a [routerLink]="item.route" 
+                   routerLinkActive="active" 
+                   [routerLinkActiveOptions]="{exact: item.route === '/'}"
+                   class="nav-link"
+                   [title]="item.label">
+                    <span class="nav-icon">{{ item.icon }}</span>
+                    <span class="nav-label" *ngIf="!isCollapsed">{{ item.label }}</span>
+                </a>
+            </li>
+        }
+    </ul>
+
+    <div class="nav-footer" *ngIf="!isCollapsed">
+        <span class="version">v1.0.0</span>
+    </div>
+</nav>

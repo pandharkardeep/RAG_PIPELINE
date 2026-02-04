@@ -17,7 +17,7 @@
         .query-text {
             font-size: 1rem;
             color: #666;
-            
+
             strong {
                 color: #1976d2;
             }
@@ -67,7 +67,7 @@
 
         .tweet-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-            
+
             &:hover {
                 transform: translateY(-4px);
                 box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);

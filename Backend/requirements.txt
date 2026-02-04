@@ -28,3 +28,8 @@ sentence-transformers>=2.2.2
 transformers>=4.35.0
 torch>=2.0.0
 accelerate>=0.20.0
+
+# Chart Generation
+matplotlib>=3.8.0
+seaborn>=0.13.0
+Pillow>=10.0.0

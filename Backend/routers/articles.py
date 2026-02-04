@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import requests
 from config import PINECONE_KEY
@@ -9,12 +10,21 @@ import pandas as pd
 import sys
 import io, re
 from contextlib import redirect_stderr
+from datetime import datetime
 from services.news_article_retrieval import news_article_retrieval
 from services.chunk import chunk
 from services.emb_service import emb_service
 from services.pinecone_service import PineconeService
 
 router = APIRouter(prefix='/articles')
+
+# Cache to store last fetched articles (avoids re-fetching for export)
+article_cache = {
+    "query": None,
+    "data": None,
+    "source": None,
+    "timestamp": None
+}
 
 # Initialize services globally to avoid recreating them on each request
 try:
@@ -26,7 +36,6 @@ try:
     # Check if index exists before creation to avoid errors on subsequent restarts
     if "news-articles" not in [index.name for index in pinecone_service.pc.list_indexes()]:
         pinecone_service.create_index(metric="cosine", cloud="aws", region="us-east-1")
-    print("✓ Pinecone services initialized successfully")
 except Exception as e:
     print(f"⚠ Warning: Could not initialize")
 
@@ -35,9 +44,22 @@ def news_ingestion(query: str, limit: int = 10):
     """
     Fetch news articles, chunk them, generate embeddings, and store in Pinecone
     """
+    global article_cache
+    
     nar = news_article_retrieval(query, limit)
-    # Return the original response
-    return nar.get_ingestion()
+    result = nar.get_ingestion()
+    
+    # Cache the result for export
+    if result.get('success', False):
+        article_cache = {
+            "query": query,
+            "data": result.get('data', []),
+            "source": result.get('source', 'Unknown'),
+            "timestamp": datetime.now()
+        }
+        print(f"✓ Cached {len(article_cache['data'])} articles for query: {query}")
+    
+    return result
 
 @router.post("/ingest")
 def news_addition(query: str, limit: int = 10):
@@ -157,3 +179,67 @@ def search_articles(query: str, top_k: int = 5):
             "error": str(e),
             "results": []
         }
+
+
+@router.get("/export/csv")
+def export_articles_csv():
+    """
+    Export cached articles as a downloadable CSV file.
+    Must call /articles endpoint first to fetch and cache articles.
+    
+    Returns:
+        StreamingResponse: CSV file download
+    """
+    global article_cache
+    
+    # Check if we have cached data
+    if article_cache["data"] is None or len(article_cache["data"]) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="No articles cached. Please fetch articles first using /articles endpoint."
+        )
+    
+    try:
+        articles = article_cache["data"]
+        query = article_cache["query"] or "unknown"
+        source = article_cache["source"] or "Unknown"
+        
+        # Create DataFrame with relevant fields
+        export_data = []
+        for idx, article in enumerate(articles, 1):
+            export_data.append({
+                'No': idx,
+                'Title': article.get('title', ''),
+                'Link': article.get('link', ''),
+                'Description': article.get('desc', ''),
+                'Query': query,
+                'Source': source,
+                'Exported_At': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            })
+        
+        df = pd.DataFrame(export_data)
+        
+        # Convert to CSV
+        output = io.StringIO()
+        df.to_csv(output, index=False, encoding='utf-8')
+        output.seek(0)
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"articles_{query.replace(' ', '_')}_{timestamp}.csv"
+        
+        print(f"✓ Exported {len(articles)} cached articles to CSV: {filename}")
+        
+        return StreamingResponse(
+            iter([output.getvalue()]),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ CSV export failed: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")

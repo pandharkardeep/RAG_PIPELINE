@@ -13,7 +13,6 @@ cleaner = None
 try:
     # Initialize embedding service
     embedder = emb_service()
-    print("✓ Embedding service initialized for cleanup")
     
     # Initialize Pinecone service
     pinecone_service = PineconeService(
@@ -21,18 +20,18 @@ try:
         dimension=embedder.get_dimension()
     )
     pinecone_service.get_index()
-    print("✓ Pinecone service initialized for cleanup")
     
     # Initialize cleanup service
     cleaner = cleanup_service(folder="NEWS_data")
-    print("✓ Cleanup service initialized")
     
 except Exception as e:
     print(f"⚠ Warning: Could not initialize cleanup services: {e}")
 
 
-@router.post("/")
-def cleanup_all_data(confirm: bool = Query(False, description="Confirmation flag to prevent accidental deletion")):
+@router.delete("/")
+def cleanup_all_data(
+    confirm: bool = Query(False, description="Confirmation flag to prevent accidental deletion")
+):
     """
     Clean all data (NEWS_data folder and Pinecone vectors)
     

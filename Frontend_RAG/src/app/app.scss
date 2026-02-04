@@ -1,0 +1,29 @@
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f5f7fa;
+
+    .main-content {
+        flex: 1;
+        margin-left: 250px;
+        min-height: 100vh;
+        transition: margin-left 0.3s ease;
+        padding: 1rem;
+    }
+
+    // When navbar is collapsed
+    &.nav-collapsed {
+        .main-content {
+            margin-left: 70px;
+        }
+    }
+}
+
+// Responsive
+@media (max-width: 768px) {
+    .app-layout {
+        .main-content {
+            margin-left: 70px;
+        }
+    }
+}

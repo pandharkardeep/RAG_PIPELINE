@@ -24,6 +24,7 @@ export interface PipelineStats {
 export interface TweetResponse {
     success: boolean;
     query: string;
+    session_id?: string;
     count: number;
     results: string[];
     sources: TweetSource[];

@@ -34,16 +34,34 @@ class LLMService:
         if self.model is None or self.tokenizer is None:
             print(f"Loading model: {self.model_name}...")
             try:
-                self.tokenizer = AutoTokenizer.from_pretrained(
-                    self.model_name,
-                    trust_remote_code=True
-                )
-                self.model = AutoModelForCausalLM.from_pretrained(
-                    self.model_name,
-                    torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
-                    device_map="auto" if self.device == "cuda" else None,
-                    trust_remote_code=True
-                )
+                # Try loading from local cache first to avoid re-downloading
+                try:
+                    self.tokenizer = AutoTokenizer.from_pretrained(
+                        self.model_name,
+                        trust_remote_code=True,
+                        local_files_only=True
+                    )
+                    self.model = AutoModelForCausalLM.from_pretrained(
+                        self.model_name,
+                        torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
+                        device_map="auto" if self.device == "cuda" else None,
+                        trust_remote_code=True,
+                        local_files_only=True
+                    )
+                    print("✓ Loaded model from local cache")
+                except Exception:
+                    # Model not in cache, download it
+                    print("Model not found in cache, downloading...")
+                    self.tokenizer = AutoTokenizer.from_pretrained(
+                        self.model_name,
+                        trust_remote_code=True
+                    )
+                    self.model = AutoModelForCausalLM.from_pretrained(
+                        self.model_name,
+                        torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
+                        device_map="auto" if self.device == "cuda" else None,
+                        trust_remote_code=True
+                    )
                 
                 if self.device == "cpu":
                     self.model = self.model.to(self.device)
