@@ -1,72 +1,48 @@
 
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
+from llama_cpp import Llama
 import os
 
 
 class LLMService:
     """
-    Service for generating tweets using HuggingFace LLM models
+    Service for generating tweets using local GGUF LLM models via llama-cpp-python
     Uses on-demand loading for better resource management in deployed systems
     """
     def load_prompt(self, path: str) -> str:
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
 
-    def __init__(self, model_name: str = "LiquidAI/LFM2.5-1.2B-Instruct"):
+    def __init__(self, model_path: str = None):
         """
         Initialize the LLM service
         
         Args:
-            model_name (str): HuggingFace model identifier
+            model_path (str): Path to the GGUF model file
         """
-        self.model_name = model_name
+        if model_path is None:
+            # Default to the Llama 3.2 model in the Backend directory
+            model_path = os.path.join(os.path.dirname(__file__), "..", "Llama-3.2-3B-Instruct-Q4_K_M.gguf")
+        
+        self.model_path = os.path.abspath(model_path)
         self.model = None
-        self.tokenizer = None
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"LLM Service initialized (device: {self.device})")
+        print(f"LLM Service initialized (model: {os.path.basename(self.model_path)})")
     
     def _load_model(self):
         """
-        Load the model and tokenizer on-demand
+        Load the model on-demand
         This approach saves memory when the service is not actively being used
         """
-        if self.model is None or self.tokenizer is None:
-            print(f"Loading model: {self.model_name}...")
+        if self.model is None:
+            print(f"Loading model: {os.path.basename(self.model_path)}...")
             try:
-                # Try loading from local cache first to avoid re-downloading
-                try:
-                    self.tokenizer = AutoTokenizer.from_pretrained(
-                        self.model_name,
-                        trust_remote_code=True,
-                        local_files_only=True
-                    )
-                    self.model = AutoModelForCausalLM.from_pretrained(
-                        self.model_name,
-                        torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
-                        device_map="auto" if self.device == "cuda" else None,
-                        trust_remote_code=True,
-                        local_files_only=True
-                    )
-                    print("✓ Loaded model from local cache")
-                except Exception:
-                    # Model not in cache, download it
-                    print("Model not found in cache, downloading...")
-                    self.tokenizer = AutoTokenizer.from_pretrained(
-                        self.model_name,
-                        trust_remote_code=True
-                    )
-                    self.model = AutoModelForCausalLM.from_pretrained(
-                        self.model_name,
-                        torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
-                        device_map="auto" if self.device == "cuda" else None,
-                        trust_remote_code=True
-                    )
-                
-                if self.device == "cpu":
-                    self.model = self.model.to(self.device)
-                
-                print(f"✓ Model loaded successfully on {self.device}")
+                self.model = Llama(
+                    model_path=self.model_path,
+                    n_ctx=4096,  # Context window
+                    n_threads=4,  # CPU threads
+                    n_gpu_layers=0,  # Set > 0 if you have GPU support compiled
+                    verbose=False
+                )
+                print(f"✓ Model loaded successfully")
             except Exception as e:
                 print(f"❌ Failed to load model: {e}")
                 raise
@@ -77,7 +53,7 @@ class LLMService:
         
         Args:
             query (str): The topic or query to generate tweets about
-            count (int): Number of tweets to generate (default: 3)
+            count (int): Number of tweets to generate (default: 8)
             max_length (int): Maximum length per tweet in characters (default: 280)
             context_articles (list): Optional list of article dictionaries with 'text', 'filename', 'score'
         
@@ -94,7 +70,7 @@ class LLMService:
         if context_articles and len(context_articles) > 0:
             context_section = "You are generating tweets based on the following news articles:\n\n"
             for i, article in enumerate(context_articles, 1):
-                article_text = article.get('text', '')[:10000]  # Limit each article to 1000 chars
+                article_text = article.get('text', '')[:10000]  # Limit each article to 10000 chars
                 filename = article.get('filename', 'Unknown')
                 context_section += f"Article {i}:\n{article_text}\nSource: {filename}\n\n"
             
@@ -111,39 +87,33 @@ Each tweet should be:
 - Maximum 280 characters
 - Professional but conversational tone
 - Include relevant hashtags where appropriate
-
+- Use proper grammar and spelling
+- Each tweet should be seperated by two lines (basically \n\n )
+- Only include tweets, nothing else. Do not include any additional text.
+Format : 
+Tweet 1 : Content \n\n
+Tweet 2 : Content \n\n
+Tweet 3 : Content \n\n and so on.
+be strict with formatting.
 Tweet 1:"""
         
         prompt = context_section
         
         try:
-            # Tokenize the input
-            inputs = self.tokenizer(
+            # Generate text using llama-cpp
+            output = self.model(
                 prompt,
-                return_tensors="pt",
-                truncation=True,
-                max_length=2048  # Increased to accommodate more articles
-            ).to(self.device)
+                max_tokens=max_length * count + 150,  # Extra tokens for formatting
+                temperature=0.7,
+                top_p=0.9,
+                stop=["</s>", "<|eot_id|>", "<|end_of_text|>"],
+                echo=False
+            )
             
-            # Generate text
-            with torch.no_grad():
-                outputs = self.model.generate(
-                    **inputs,
-                    max_new_tokens=max_length * count + 150,  # Extra tokens for formatting
-                    temperature=0.7,  # Slightly lower for more factual generation
-                    top_p=0.9,
-                    do_sample=True,
-                    num_return_sequences=1,
-                    pad_token_id=self.tokenizer.eos_token_id
-                )
-            
-            # Decode the generated text
-            generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-            
-            # Extract tweets from generated text
-            # Remove the prompt from the output
-            generated_content = generated_text[len(prompt):].strip()
+            # Extract generated text
+            generated_content = output["choices"][0]["text"].strip()
             print(generated_content)
+            
             # Split by "Tweet" markers and clean up
             raw_tweets = []
             
@@ -156,20 +126,33 @@ Tweet 1:"""
                         tweet_text = part.strip()
                         # Remove leading numbers and colons
                         tweet_text = tweet_text.lstrip("0123456789:).").strip()
-                        if tweet_text:
+                        if tweet_text and len(tweet_text) > 50:
                             raw_tweets.append(tweet_text)
             else:
-                # Fallback: split by newlines
-                lines = generated_content.split('\n')
-                for line in lines:
-                    line = line.strip()
-                    if line and len(line) > 20:  # Only keep substantial lines
-                        raw_tweets.append(line)
+                # Primary fallback: split by double newlines (paragraph separation)
+                paragraphs = generated_content.split('\n\n')
+                for para in paragraphs:
+                    para = para.strip()
+                    # Skip preamble content
+                    if not para or len(para) < 50:
+                        continue
+                    # Skip instruction/planning lines
+                    lower_para = para.lower()
+                    if any(skip in lower_para for skip in [
+                        'the thread should', 'the thread will', 'here is the thread',
+                        'based on articles', 'brief introduction', 'key findings',
+                        'future implications', 'output rules', 'tweet must be'
+                    ]):
+                        continue
+                    # Skip numbered lists (1. 2. 3.)
+                    if para[0].isdigit() and (para[1] == '.' or (len(para) > 2 and para[2] == '.')):
+                        continue
+                    raw_tweets.append(para)
             
             # Clean and limit tweets to requested count
             for tweet in raw_tweets[:count]:
                 # Limit to 280 characters
-                cleaned_tweet = tweet[:280].strip()
+                cleaned_tweet = tweet.strip()
                 if cleaned_tweet:
                     tweets.append(cleaned_tweet)
             
@@ -179,7 +162,7 @@ Tweet 1:"""
                     fallback = f"Key insights from recent articles about {query}. #News #{query.replace(' ', '')[:20]}"
                 else:
                     fallback = f"Interesting insights about {query}. Stay tuned for more updates! #{query.replace(' ', '')[:20]}"
-                tweets.append(fallback[:280])
+                tweets.append(fallback)
                 
         except Exception as e:
             print(f"❌ Error generating tweets: {e}")
@@ -196,12 +179,5 @@ Tweet 1:"""
         """
         if self.model is not None:
             del self.model
-            del self.tokenizer
             self.model = None
-            self.tokenizer = None
-            
-            # Clear CUDA cache if using GPU
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-            
             print("✓ Model unloaded from memory")

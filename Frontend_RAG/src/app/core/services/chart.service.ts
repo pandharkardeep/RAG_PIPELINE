@@ -18,6 +18,7 @@ export interface ChartOutput {
     caption: string;
     alt_text: string;
     data_summary: string;
+    source_data?: Array<{ [key: string]: any }>;  // Raw data for CSV/XLSX export
 }
 
 export interface ExtractResponse {
@@ -126,5 +127,89 @@ export class ChartService {
                 this.downloadChart(chart.png_base64, `chart_${index + 1}_${chart.chart_type}.png`);
             }, index * 500);
         });
+    }
+
+    /**
+     * Download chart data as CSV
+     */
+    downloadAsCSV(data: Array<{ [key: string]: any }>, filename: string): void {
+        if (!data || data.length === 0) return;
+
+        const headers = Object.keys(data[0]);
+        const csvRows = [
+            headers.join(','),
+            ...data.map(row =>
+                headers.map(h => {
+                    const val = row[h];
+                    // Escape quotes and wrap in quotes if contains comma
+                    const strVal = String(val ?? '');
+                    return strVal.includes(',') || strVal.includes('"')
+                        ? `"${strVal.replace(/"/g, '""')}"`
+                        : strVal;
+                }).join(',')
+            )
+        ];
+
+        const csvContent = csvRows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename.endsWith('.csv') ? filename : `${filename}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    /**
+     * Download chart data as XLSX (using basic XML format)
+     */
+    downloadAsXLSX(data: Array<{ [key: string]: any }>, filename: string): void {
+        if (!data || data.length === 0) return;
+
+        const headers = Object.keys(data[0]);
+
+        // Create simple XML-based Excel format
+        let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+        xml += '<?mso-application progid="Excel.Sheet"?>\n';
+        xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" ';
+        xml += 'xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n';
+        xml += '<Worksheet ss:Name="Chart Data">\n<Table>\n';
+
+        // Header row
+        xml += '<Row>\n';
+        headers.forEach(h => {
+            xml += `<Cell><Data ss:Type="String">${this.escapeXml(h)}</Data></Cell>\n`;
+        });
+        xml += '</Row>\n';
+
+        // Data rows
+        data.forEach(row => {
+            xml += '<Row>\n';
+            headers.forEach(h => {
+                const val = row[h];
+                const type = typeof val === 'number' ? 'Number' : 'String';
+                xml += `<Cell><Data ss:Type="${type}">${this.escapeXml(String(val ?? ''))}</Data></Cell>\n`;
+            });
+            xml += '</Row>\n';
+        });
+
+        xml += '</Table>\n</Worksheet>\n</Workbook>';
+
+        const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    private escapeXml(str: string): string {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&apos;');
     }
 }

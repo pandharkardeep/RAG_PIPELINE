@@ -16,7 +16,8 @@ export class Navbar {
     navItems = [
         { route: '/', label: 'Home', icon: '🏠' },
         { route: '/thread-formatter', label: 'Thread Formatter', icon: '🧵' },
-        {route: '/chart-extractor', label: 'Chart Extractor', icon: '📊'}
+        { route: '/chart-extractor', label: 'Chart Extractor', icon: '📊' },
+        { route: '/research', label: 'Research', icon: '🔍' }
     ];
 
     toggleNavbar(): void {

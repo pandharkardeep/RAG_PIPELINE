@@ -114,7 +114,8 @@ async def generate_charts(request: GenerateRequest):
                     chart_type=result.chart_type,
                     caption=result.caption,
                     alt_text=result.alt_text,
-                    data_summary=result.data_summary
+                    data_summary=result.data_summary,
+                    source_data=result.source_data
                 ))
         else:
             # Auto-generate all applicable charts
@@ -125,7 +126,8 @@ async def generate_charts(request: GenerateRequest):
                     chart_type=result.chart_type,
                     caption=result.caption,
                     alt_text=result.alt_text,
-                    data_summary=result.data_summary
+                    data_summary=result.data_summary,
+                    source_data=result.source_data
                 ))
         
         return GenerateResponse(
@@ -179,7 +181,8 @@ async def full_pipeline(request: FullPipelineRequest):
                     chart_type=result.chart_type,
                     caption=result.caption,
                     alt_text=result.alt_text,
-                    data_summary=result.data_summary
+                    data_summary=result.data_summary,
+                    source_data=result.source_data
                 ))
         else:
             results = chart_service.generate_all_charts(data_dict)
@@ -189,7 +192,8 @@ async def full_pipeline(request: FullPipelineRequest):
                     chart_type=result.chart_type,
                     caption=result.caption,
                     alt_text=result.alt_text,
-                    data_summary=result.data_summary
+                    data_summary=result.data_summary,
+                    source_data=result.source_data
                 ))
         
         return FullPipelineResponse(

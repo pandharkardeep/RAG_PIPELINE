@@ -36,6 +36,9 @@ export class ChartExtractor implements OnInit {
     successMessage: string = '';
     activeTab: 'input' | 'preview' | 'charts' = 'input';
 
+    // Track which charts have their data panel expanded
+    expandedChartData: Set<number> = new Set();
+
     constructor(private chartService: ChartService) { }
 
     ngOnInit(): void {
@@ -190,6 +193,7 @@ export class ChartExtractor implements OnInit {
         this.successMessage = '';
         this.selectedChartTypes = [];
         this.activeTab = 'input';
+        this.expandedChartData.clear();
     }
 
     toggleChartType(typeId: string): void {
@@ -211,5 +215,50 @@ export class ChartExtractor implements OnInit {
 
     getChartImageUrl(base64: string): string {
         return `data:image/png;base64,${base64}`;
+    }
+
+    toggleDataPreview(index: number): void {
+        if (this.expandedChartData.has(index)) {
+            this.expandedChartData.delete(index);
+        } else {
+            this.expandedChartData.add(index);
+        }
+    }
+
+    isDataExpanded(index: number): boolean {
+        return this.expandedChartData.has(index);
+    }
+
+    // Get first 5 rows for preview display
+    getPreviewData(chart: ChartOutput): Array<{ [key: string]: any }> {
+        if (!chart.source_data || chart.source_data.length === 0) return [];
+        return chart.source_data.slice(0, 5);
+    }
+
+    // Get column headers from source data
+    getDataHeaders(chart: ChartOutput): string[] {
+        if (!chart.source_data || chart.source_data.length === 0) return [];
+        return Object.keys(chart.source_data[0]);
+    }
+
+    // Check if there's more data than preview shows
+    hasMoreData(chart: ChartOutput): boolean {
+        return (chart.source_data?.length || 0) > 5;
+    }
+
+    downloadChartDataAsCSV(chart: ChartOutput, index: number): void {
+        if (!chart.source_data) return;
+        const filename = `chart_${index + 1}_${chart.chart_type}_data`;
+        this.chartService.downloadAsCSV(chart.source_data, filename);
+        this.successMessage = 'CSV downloaded!';
+        setTimeout(() => this.successMessage = '', 2000);
+    }
+
+    downloadChartDataAsXLSX(chart: ChartOutput, index: number): void {
+        if (!chart.source_data) return;
+        const filename = `chart_${index + 1}_${chart.chart_type}_data`;
+        this.chartService.downloadAsXLSX(chart.source_data, filename);
+        this.successMessage = 'Excel file downloaded!';
+        setTimeout(() => this.successMessage = '', 2000);
     }
 }

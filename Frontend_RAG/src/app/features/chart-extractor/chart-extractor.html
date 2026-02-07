@@ -193,6 +193,56 @@
                             <button class="btn-sm" (click)="copyCaption(chart.caption)">
                                 📋 Copy Caption
                             </button>
+                            <button 
+                                class="btn-sm btn-data" 
+                                [class.active]="isDataExpanded($index)"
+                                (click)="toggleDataPreview($index)">
+                                {{ isDataExpanded($index) ? '📊 Hide Data' : '📊 Show Data' }}
+                            </button>
+                        </div>
+                        <!-- Collapsible Data Preview Panel -->
+                        <div class="data-preview-panel" *ngIf="isDataExpanded($index)">
+                            <div class="data-preview-content">
+                                <div class="data-header-row">
+                                    <h4>📈 Chart Data</h4>
+                                    <div class="download-buttons">
+                                        <button class="btn-download" (click)="downloadChartDataAsCSV(chart, $index)" *ngIf="chart.source_data?.length">
+                                            📥 CSV
+                                        </button>
+                                        <button class="btn-download" (click)="downloadChartDataAsXLSX(chart, $index)" *ngIf="chart.source_data?.length">
+                                            📥 XLSX
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Data Table (first 5 rows) -->
+                                <div class="data-table-wrapper" *ngIf="chart.source_data?.length; else noData">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                @for (header of getDataHeaders(chart); track header) {
+                                                    <th>{{ header }}</th>
+                                                }
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @for (row of getPreviewData(chart); track $index) {
+                                                <tr>
+                                                    @for (header of getDataHeaders(chart); track header) {
+                                                        <td>{{ row[header] }}</td>
+                                                    }
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                    <p class="data-count" *ngIf="hasMoreData(chart)">
+                                        Showing 5 of {{ chart.source_data?.length }} rows. Download for full data.
+                                    </p>
+                                </div>
+                                <ng-template #noData>
+                                    <pre class="data-summary">{{ chart.data_summary }}</pre>
+                                </ng-template>
+                            </div>
                         </div>
                     </div>
                 }

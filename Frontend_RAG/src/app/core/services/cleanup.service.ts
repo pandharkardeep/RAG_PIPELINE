@@ -32,7 +32,7 @@ export class CleanupService {
      */
     cleanupAll(confirm: boolean = true): Observable<CleanupResponse> {
         const params = new HttpParams().set('confirm', confirm.toString());
-        return this.http.post<CleanupResponse>(this.apiUrl, null, { params });
+        return this.http.delete<CleanupResponse>(this.apiUrl, { params });
     }
 
     /**
@@ -42,7 +42,7 @@ export class CleanupService {
      */
     cleanupSession(sessionId: string, confirm: boolean = true): Observable<CleanupResponse> {
         const params = new HttpParams().set('confirm', confirm.toString());
-        return this.http.post<CleanupResponse>(`${this.apiUrl}/session/${sessionId}`, null, { params });
+        return this.http.delete<CleanupResponse>(`${this.apiUrl}/session/${sessionId}`, { params });
     }
 
     /**

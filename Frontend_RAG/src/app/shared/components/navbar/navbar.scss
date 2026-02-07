@@ -4,13 +4,13 @@
     top: 0;
     height: 100vh;
     width: 250px;
-    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+    background: #333;
     color: #fff;
     display: flex;
     flex-direction: column;
     transition: width 0.3s ease;
     z-index: 1000;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
 
     &.collapsed {
         width: 70px;
@@ -36,10 +36,7 @@
         .logo {
             font-size: 1.2rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #cdad7d;
             white-space: nowrap;
         }
 
@@ -62,8 +59,7 @@
             font-size: 1rem;
 
             &:hover {
-                background: rgba(255, 255, 255, 0.2);
-                transform: scale(1.05);
+                background: rgba(205, 173, 125, 0.3);
             }
         }
     }
@@ -90,15 +86,14 @@
             font-weight: 500;
 
             &:hover {
-                background: rgba(255, 255, 255, 0.1);
+                background: rgba(205, 173, 125, 0.2);
                 color: #fff;
-                transform: translateX(4px);
             }
 
             &.active {
-                background: linear-gradient(135deg, #667eea, #764ba2);
+                background: #cdad7d;
                 color: #fff;
-                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                box-shadow: 0 4px 15px rgba(205, 173, 125, 0.4);
 
                 &:hover {
                     transform: translateX(0);

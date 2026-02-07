@@ -12,10 +12,7 @@ import { NewsArticle } from '../../core/models/news.model';
 })
 export class Home {
   query: string = '';
-  limit: number = 10;
-  count: number = 3;
-  top_k: number = 5;
-  fetch_limit: number = 10;
+  numTweets: number = 3;
 
   constructor(private NewsService: NewsService, private router: Router) { }
 
@@ -23,7 +20,7 @@ export class Home {
     this.router.navigate(['/articles'], {
       queryParams: {
         query: this.query,
-        limit: this.limit
+        limit: 10  // Use sensible default
       }
     });
   }
@@ -32,9 +29,7 @@ export class Home {
     this.router.navigate(['/tweets'], {
       queryParams: {
         query: this.query,
-        count: this.count,
-        top_k: this.top_k,
-        fetch_limit: this.fetch_limit
+        count: this.numTweets
       }
     });
   }

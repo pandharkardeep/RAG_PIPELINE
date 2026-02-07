@@ -107,49 +107,52 @@ RULES:
             return ExtractedData(source_url=url)
     
     def _llm_extract(self, article_text: str) -> ExtractedData:
-        """Use LLM to extract structured data"""
+        """Use LLM to extract structured data using llama-cpp-python chat completion"""
         try:
             # Load model if needed
             self.llm_service._load_model()
             
-            # Build prompt
-            prompt = self.EXTRACTION_PROMPT.format(article_text=article_text[:8000])
+            # Build the prompt content
+            prompt_content = self.EXTRACTION_PROMPT.format(article_text=article_text)
             
-            # Generate using the LLM
-            inputs = self.llm_service.tokenizer(
-                prompt,
-                return_tensors="pt",
-                truncation=True,
-                max_length=4096
-            ).to(self.llm_service.device)
+            # Use chat format for instruction-tuned models
+            # llama-cpp-python handles chat template internally via create_chat_completion
+            messages = [
+                {"role": "system", "content": "You are a data extraction expert. Your goal is to identify and structure all numerical data, statistical insights, and key performance indicators from the provided news article."},
+                {"role": "user", "content": prompt_content}
+            ]
             
-            import torch
-            with torch.no_grad():
-                outputs = self.llm_service.model.generate(
-                    **inputs,
-                    max_new_tokens=2048,
-                    temperature=0.3,  # Lower temperature for more deterministic output
-                    top_p=0.9,
-                    do_sample=True,
-                    num_return_sequences=1,
-                    pad_token_id=self.llm_service.tokenizer.eos_token_id
-                )
+            # Use llama-cpp-python's create_chat_completion API
+            response = self.llm_service.model.create_chat_completion(
+                messages=messages,
+                max_tokens=2048,  # Increased to prevent JSON truncation
+                temperature=0.3,
+                top_p=0.9,
+                stop=["</s>", "<|eot_id|>", "<|end_of_text|>"]
+            )
             
-            generated_text = self.llm_service.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            # Extract generated text from response
+            generated_text = response["choices"][0]["message"]["content"].strip()
+            
+            print(f"Generated text (first 500 chars): {generated_text[:500]}")  # Debug logging
             
             # Extract JSON from response
-            json_str = self._extract_json(generated_text[len(prompt):])
+            json_str = self._extract_json(generated_text)
             if json_str:
                 return self._parse_json_response(json_str)
+            else:
+                print(f"No JSON found in response: {generated_text[:300]}")
             
             return ExtractedData()
             
         except Exception as e:
             print(f"LLM extraction error: {e}")
+            import traceback
+            traceback.print_exc()
             return ExtractedData()
     
     def _extract_json(self, text: str) -> Optional[str]:
-        """Extract JSON object from text"""
+        """Extract JSON object from text, with repair for truncated responses"""
         # Try to find JSON block
         text = text.strip()
         
@@ -160,7 +163,10 @@ RULES:
         
         # Find matching closing brace
         brace_count = 0
+        bracket_count = 0
         end_idx = start_idx
+        last_valid_pos = start_idx
+        
         for i, char in enumerate(text[start_idx:], start_idx):
             if char == '{':
                 brace_count += 1
@@ -169,54 +175,153 @@ RULES:
                 if brace_count == 0:
                     end_idx = i + 1
                     break
+            elif char == '[':
+                bracket_count += 1
+            elif char == ']':
+                bracket_count -= 1
+            
+            # Track last position after a complete value
+            if char in ',}]':
+                last_valid_pos = i + 1
         
         if end_idx > start_idx:
             return text[start_idx:end_idx]
+        
+        # JSON is truncated - attempt to repair
+        if brace_count > 0:
+            print(f"JSON appears truncated (unclosed braces: {brace_count}, brackets: {bracket_count}). Attempting repair...")
+            json_fragment = text[start_idx:]
+            
+            # Close any open brackets first, then braces
+            repaired = json_fragment.rstrip(',: \n\r\t"')
+            
+            # If we're mid-string, close the string
+            quote_count = repaired.count('"') - repaired.count('\\"')
+            if quote_count % 2 == 1:
+                repaired += '"'
+            
+            # Close arrays and objects
+            repaired += ']' * bracket_count
+            repaired += '}' * brace_count
+            
+            # Try to validate the repaired JSON
+            try:
+                json.loads(repaired)
+                print("JSON repair successful!")
+                return repaired
+            except json.JSONDecodeError as e:
+                print(f"JSON repair failed: {e}")
+                return None
+        
         return None
     
     def _parse_json_response(self, json_str: str) -> ExtractedData:
-        """Parse JSON string into ExtractedData"""
+        """Parse JSON string into ExtractedData with robust handling of schema variations"""
         try:
             data = json.loads(json_str)
             
             extracted = ExtractedData()
             
-            # Parse comparisons
-            for comp in data.get('comparisons', []):
-                if isinstance(comp, dict) and 'metric' in comp and 'entities' in comp:
-                    extracted.comparisons.append(Comparison(
-                        metric=comp.get('metric', ''),
-                        entities=comp.get('entities', {}),
-                        unit=comp.get('unit', ''),
-                        source_snippet=comp.get('source_snippet', '')
-                    ))
+            # Parse comparisons - handle both 'entities' dict and 'value' single value formats
+            comparisons_data = data.get('comparisons', [])
+            if isinstance(comparisons_data, list):
+                for comp in comparisons_data:
+                    try:
+                        if isinstance(comp, dict) and 'metric' in comp:
+                            # Handle 'entities' format: {"Entity A": 10, "Entity B": 20}
+                            if 'entities' in comp and isinstance(comp.get('entities'), dict):
+                                extracted.comparisons.append(Comparison(
+                                    metric=comp.get('metric', ''),
+                                    entities=comp.get('entities', {}),
+                                    unit=comp.get('unit', ''),
+                                    source_snippet=comp.get('source_snippet', '')
+                                ))
+                            # Handle 'entity1/entity2/value' format from LLM
+                            elif 'entity1' in comp and 'entity2' in comp:
+                                # Parse value - could be string like "6.84%" or numeric
+                                val = comp.get('value', 0)
+                                if isinstance(val, str):
+                                    # Extract numeric part from strings like "6.84%", "$285 billion"
+                                    import re as regex_mod
+                                    num_match = regex_mod.search(r'([\d.]+)', val)
+                                    val = float(num_match.group(1)) if num_match else 0
+                                extracted.comparisons.append(Comparison(
+                                    metric=comp.get('metric', ''),
+                                    entities={
+                                        comp.get('entity1', 'Entity 1'): val,
+                                        comp.get('entity2', 'Entity 2'): 0  # Comparison reference
+                                    },
+                                    unit=comp.get('unit', '') or self._extract_unit(comp.get('value', '')),
+                                    source_snippet=comp.get('source_snippet', '')
+                                ))
+                            # Handle simple 'value' format: {"metric": "...", "value": 15}
+                            elif 'value' in comp:
+                                extracted.comparisons.append(Comparison(
+                                    metric=comp.get('metric', ''),
+                                    entities={comp.get('metric', 'Value'): comp.get('value', 0)},
+                                    unit=comp.get('unit', ''),
+                                    source_snippet=comp.get('source_snippet', '')
+                                ))
+                    except Exception as e:
+                        print(f"Error parsing comparison: {e}")
+                        continue
             
-            # Parse breakdowns
-            for bd in data.get('breakdowns', []):
-                if isinstance(bd, dict) and 'category' in bd and 'values' in bd:
-                    extracted.breakdowns.append(Breakdown(
-                        category=bd.get('category', ''),
-                        values=bd.get('values', {}),
-                        unit=bd.get('unit', '%')
-                    ))
+            # Parse breakdowns - handle both list and dict formats
+            breakdowns_data = data.get('breakdowns', [])
+            if isinstance(breakdowns_data, list):
+                for bd in breakdowns_data:
+                    try:
+                        if isinstance(bd, dict) and 'category' in bd and 'values' in bd:
+                            extracted.breakdowns.append(Breakdown(
+                                category=bd.get('category', ''),
+                                values=bd.get('values', {}),
+                                unit=bd.get('unit', '%')
+                            ))
+                    except Exception as e:
+                        print(f"Error parsing breakdown: {e}")
+                        continue
+            elif isinstance(breakdowns_data, dict):
+                # Handle dict format: {"total_composition": {"Part A": 50, "Part B": 50}}
+                try:
+                    for category, values in breakdowns_data.items():
+                        if isinstance(values, dict):
+                            extracted.breakdowns.append(Breakdown(
+                                category=category,
+                                values=values,
+                                unit='%'
+                            ))
+                except Exception as e:
+                    print(f"Error parsing breakdown dict: {e}")
             
             # Parse time series
-            for ts in data.get('time_series', []):
-                if isinstance(ts, dict) and 'label' in ts and 'data' in ts:
-                    extracted.time_series.append(TimeSeries(
-                        label=ts.get('label', ''),
-                        data=ts.get('data', []),
-                        unit=ts.get('unit', '')
-                    ))
+            time_series_data = data.get('time_series', [])
+            if isinstance(time_series_data, list):
+                for ts in time_series_data:
+                    try:
+                        if isinstance(ts, dict) and 'label' in ts and 'data' in ts:
+                            extracted.time_series.append(TimeSeries(
+                                label=ts.get('label', ''),
+                                data=ts.get('data', []),
+                                unit=ts.get('unit', '')
+                            ))
+                    except Exception as e:
+                        print(f"Error parsing time series: {e}")
+                        continue
             
             # Parse key facts
-            for kf in data.get('key_facts', []):
-                if isinstance(kf, dict) and 'fact' in kf and 'value' in kf:
-                    extracted.key_facts.append(KeyFact(
-                        fact=kf.get('fact', ''),
-                        value=str(kf.get('value', '')),
-                        context=kf.get('context', '')
-                    ))
+            key_facts_data = data.get('key_facts', [])
+            if isinstance(key_facts_data, list):
+                for kf in key_facts_data:
+                    try:
+                        if isinstance(kf, dict) and 'fact' in kf and 'value' in kf:
+                            extracted.key_facts.append(KeyFact(
+                                fact=kf.get('fact', ''),
+                                value=str(kf.get('value', '')),
+                                context=kf.get('context', '')
+                            ))
+                    except Exception as e:
+                        print(f"Error parsing key fact: {e}")
+                        continue
             
             # Parse tables
             extracted.tables = data.get('tables', [])
@@ -226,6 +331,24 @@ RULES:
         except json.JSONDecodeError as e:
             print(f"JSON parse error: {e}")
             return ExtractedData()
+    
+    def _extract_unit(self, value_str: str) -> str:
+        """Extract unit from a value string like '6.84%' or '$285 billion'"""
+        if not isinstance(value_str, str):
+            return ''
+        value_str = value_str.strip()
+        if '%' in value_str:
+            return '%'
+        if '$' in value_str or '₹' in value_str:
+            # Check for magnitude
+            for unit in ['billion', 'million', 'trillion', 'crore', 'lakh']:
+                if unit in value_str.lower():
+                    return f"$ {unit}"
+            return '$'
+        for unit in ['billion', 'million', 'trillion', 'crore', 'lakh']:
+            if unit in value_str.lower():
+                return unit
+        return ''
     
     def _regex_fallback(self, article_text: str) -> ExtractedData:
         """Fallback regex-based extraction when LLM fails"""

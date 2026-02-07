@@ -207,12 +207,16 @@ class ChartService:
         caption = f"📊 {metric.title()}: {comparison_text}"
         alt_text = f"Horizontal bar chart comparing {metric}. {comparison_text}."
         
+        # Prepare source data for export
+        source_data = [{"Label": k, "Value": v, "Unit": unit} for k, v in entities.items()]
+        
         return ChartResult(
             png_base64=png_base64,
             chart_type=chart_type,
             caption=caption[:280],
             alt_text=alt_text,
-            data_summary=comparison_text
+            data_summary=comparison_text,
+            source_data=source_data
         )
     
     def _generate_bar_chart(self, data: dict, chart_type: str) -> ChartResult:
@@ -265,12 +269,16 @@ class ChartService:
         caption = f"📊 {title.title()}: {summary[:200]}"
         alt_text = f"Bar chart showing {title}. {summary}."
         
+        # Prepare source data for export
+        source_data = [{"Label": k, "Value": v, "Unit": unit} for k, v in entities.items()]
+        
         return ChartResult(
             png_base64=png_base64,
             chart_type=chart_type,
             caption=caption[:280],
             alt_text=alt_text,
-            data_summary=summary
+            data_summary=summary,
+            source_data=source_data
         )
     
     def _generate_pie_chart(self, data: dict, chart_type: str) -> ChartResult:
@@ -315,12 +323,16 @@ class ChartService:
         caption = f"🥧 {title.title()}: {summary[:200]}"
         alt_text = f"Pie chart showing {title}. {summary}."
         
+        # Prepare source data for export
+        source_data = [{"Label": k, "Value": v, "Unit": unit} for k, v in values_dict.items()]
+        
         return ChartResult(
             png_base64=png_base64,
             chart_type=chart_type,
             caption=caption[:280],
             alt_text=alt_text,
-            data_summary=summary
+            data_summary=summary,
+            source_data=source_data
         )
     
     def _generate_line_chart(self, data: dict, chart_type: str) -> ChartResult:
@@ -364,12 +376,16 @@ class ChartService:
         caption = f"📈 {title}: From {start_val}{unit} to {end_val}{unit} ({change:+.1f}% change)"
         alt_text = f"Line chart showing {title} over time from {years[0] if years else 'start'} to {years[-1] if years else 'end'}."
         
+        # Prepare source data for export
+        source_data = [{"Year": y, "Value": v, "Unit": unit} for y, v in zip(years, values)]
+        
         return ChartResult(
             png_base64=png_base64,
             chart_type=chart_type,
             caption=caption[:280],
             alt_text=alt_text,
-            data_summary=f"{years[0]}: {start_val} → {years[-1]}: {end_val}" if years else ""
+            data_summary=f"{years[0]}: {start_val} → {years[-1]}: {end_val}" if years else "",
+            source_data=source_data
         )
     
     def _generate_big_number(self, data: dict, chart_type: str) -> ChartResult:
@@ -426,12 +442,16 @@ class ChartService:
         caption = f"💡 Key Stats: {summary[:250]}"
         alt_text = f"Infographic showing key statistics: {summary}"
         
+        # Prepare source data for export
+        source_data = [{"Fact": f.get('fact', ''), "Value": f.get('value', ''), "Context": f.get('context', '')} if isinstance(f, dict) else {"Fact": str(f), "Value": "", "Context": ""} for f in facts]
+        
         return ChartResult(
             png_base64=png_base64,
             chart_type=chart_type,
             caption=caption[:280],
             alt_text=alt_text,
-            data_summary=summary
+            data_summary=summary,
+            source_data=source_data
         )
     
     def _generate_grouped_bar_chart(self, data: dict, chart_type: str) -> ChartResult:
@@ -453,7 +473,8 @@ class ChartService:
             chart_type='empty',
             caption=message,
             alt_text=message,
-            data_summary=""
+            data_summary="",
+            source_data=[]
         )
     
     def _fig_to_base64(self, fig) -> str:

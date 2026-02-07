@@ -4,10 +4,11 @@ import { Tweets } from './shared/components/tweets/tweets';
 import { Home } from './features/home/home';
 import { ThreadFormatter } from './features/thread-formatter/thread-formatter';
 import { ChartExtractor } from './features/chart-extractor/chart-extractor';
+import { Research } from './features/research/research';
 
 export const routes: Routes = [
     {
-        path: '',
+        path: 'home',
         component: Home
     },
     {
@@ -25,5 +26,9 @@ export const routes: Routes = [
     {
         path: 'chart-extractor',
         component: ChartExtractor
+    },
+    {
+        path: 'research',
+        component: Research
     }
 ];

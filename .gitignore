@@ -20,6 +20,7 @@ wheels/
 .installed.cfg
 *.egg
 response.txt
+*.gguf
 # Virtual Environment
 venv/
 ENV/

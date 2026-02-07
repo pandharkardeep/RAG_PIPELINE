@@ -1,11 +1,7 @@
-"""
-Chart Request/Response Models
-Pydantic models for chart extraction and generation API
-"""
 
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
-
+from dataclasses import dataclass
 
 class ExtractRequest(BaseModel):
     text: Optional[str] = None
@@ -30,6 +26,7 @@ class ChartOutput(BaseModel):
     caption: str
     alt_text: str
     data_summary: str
+    source_data: Optional[List[Dict[str, Any]]] = None  # Raw data for CSV/XLSX export
 
 
 class GenerateResponse(BaseModel):
@@ -52,9 +49,9 @@ class FullPipelineResponse(BaseModel):
 
 @dataclass
 class ChartResult:
-    """Container for generated chart"""
     png_base64: str
     chart_type: str
     caption: str
     alt_text: str
     data_summary: str
+    source_data: list = None  # Raw data for CSV/XLSX export

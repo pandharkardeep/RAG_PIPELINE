@@ -34,7 +34,7 @@ except Exception as e:
 
 
 @router.get("/generate")
-def generate_tweets(query: str, count: int = 3, top_k: int = 5, fetch_limit: int = 10):
+def generate_tweets(query: str, count: int = 3, top_k: int = None, fetch_limit: int = None):
     """
     Generate tweets using enhanced RAG with dynamic article fetching
     
@@ -50,8 +50,8 @@ def generate_tweets(query: str, count: int = 3, top_k: int = 5, fetch_limit: int
     Args:
         query (str): Topic or query to generate tweets about
         count (int): Number of tweets to generate (default: 3, max: 10)
-        top_k (int): Number of articles to retrieve for context (default: 5, max: 10)
-        fetch_limit (int): Number of fresh articles to fetch (default: 10, max: 20)
+        top_k (int): Number of articles to retrieve for context (auto-calculated if not provided)
+        fetch_limit (int): Number of fresh articles to fetch (auto-calculated if not provided)
     
     Returns:
         dict: Response with tweets, sources, and pipeline statistics
@@ -62,7 +62,16 @@ def generate_tweets(query: str, count: int = 3, top_k: int = 5, fetch_limit: int
     
     if count < 1 or count > 50:
         raise HTTPException(status_code=400, detail="Count must be between 1 and 50")
+  
+    if top_k is None:
+        # 2 relevant documents per tweet, capped at 10 for performance
+        top_k = min(count * 2, 50)
     
+    if fetch_limit is None:
+        # Fetch 2x top_k to ensure quality retrieval, capped at 20
+        fetch_limit = min(top_k * 2, 50)
+    
+    # Still validate if user provides explicit values
     if top_k < 1 or top_k > 50:
         raise HTTPException(status_code=400, detail="top_k must be between 1 and 50")
     

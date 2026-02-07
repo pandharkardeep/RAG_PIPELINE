@@ -28,7 +28,7 @@ except Exception as e:
     print(f"⚠ Warning: Could not initialize cleanup services: {e}")
 
 
-@router.delete("/")
+@router.delete("")
 def cleanup_all_data(
     confirm: bool = Query(False, description="Confirmation flag to prevent accidental deletion")
 ):

@@ -1,18 +1,18 @@
-// Home Component Styles - Material Design Inspired
+// Home Component Styles - Clean Theme
 
 :host {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-color: #f4f1ec;
     padding: 2rem;
 }
 
 .home-container {
     background: white;
     border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px #f4f1ec;
     padding: 3rem;
     max-width: 600px;
     width: 100%;
@@ -40,31 +40,29 @@
     label {
         display: block;
         font-size: 0.875rem;
-        font-weight: 500;
-        color: #555;
+        font-weight: 600;
+        color: #333;
         margin-bottom: 0.5rem;
-        letter-spacing: 0.5px;
     }
 
     input {
         width: 100%;
         padding: 0.875rem 1rem;
         font-size: 1rem;
-        border: 2px solid #e0e0e0;
+        border: 1px solid #ddd;
         border-radius: 8px;
-        background-color: #fafafa;
+        background-color: #fff;
         transition: all 0.3s ease;
         box-sizing: border-box;
 
         &:focus {
             outline: none;
-            border-color: #667eea;
-            background-color: white;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #cdad7d;
+            box-shadow: 0 0 0 3px rgba(205, 173, 125, 0.2);
         }
 
         &:hover {
-            border-color: #bbb;
+            border-color: #cdad7d;
         }
 
         &::placeholder {
@@ -97,40 +95,36 @@
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
         &:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         &:active {
             transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        &:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
         }
     }
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #cdad7d;
     color: white;
+    box-shadow: 0 2px 8px rgba(205, 173, 125, 0.3);
 
     &:hover {
-        background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+        background: #b89a6a;
+        box-shadow: 0 4px 12px rgba(205, 173, 125, 0.4);
     }
 }
 
 .btn-secondary {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: #cdad7d;
     color: white;
+    box-shadow: 0 2px 8px rgba(205, 173, 125, 0.3);
 
     &:hover {
-        background: linear-gradient(135deg, #de7ee2 0%, #dc4555 100%);
+        background: #b89a6a;
+        box-shadow: 0 4px 12px rgba(205, 173, 125, 0.4);
     }
 }
 
@@ -164,12 +158,4 @@
     .button-group {
         flex-direction: column;
     }
-}
-
-// Material Design elevation styles
-.mat-elevation {
-    box-shadow:
-        0 2px 1px -1px rgba(0, 0, 0, 0.2),
-        0 1px 1px 0 rgba(0, 0, 0, 0.14),
-        0 1px 3px 0 rgba(0, 0, 0, 0.12);
 }
