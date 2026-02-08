@@ -1,36 +1,35 @@
 # RAG Pipeline Backend Dependencies
 
 # Web Framework
-fastapi>=0.109.0
-uvicorn>=0.27.0
-pydantic>=2.5.0
+fastapi==0.128.0
+uvicorn==0.40.0
+pydantic==2.12.5
 
 # CORS
-python-multipart>=0.0.6
-
 # News Retrieval
-GoogleNews>=1.6.0
-requests>=2.31.0
+GoogleNews==1.6.15
+requests==2.32.5
 
 # Data Processing
-pandas>=2.1.0
+pandas==2.3.3
 
 # Environment Variables
-python-dotenv>=1.0.0
+python-dotenv==1.2.1
 
 # Vector Database
-pinecone-client>=3.0.0
-chromadb>=0.4.0
+pinecone==8.0.0
+chromadb==1.4.0
 
 # Embedding & NLP
-sentence-transformers>=2.2.2
+sentence-transformers==5.2.0
+huggingface_hub==0.36.0
 
 # LLM for Tweet Generation
-transformers>=4.35.0
-torch>=2.0.0
-accelerate>=0.20.0
-
+transformers==4.57.3
+torch==2.7.1
+accelerate==1.12.0
+trafilatura==2.0.0
 # Chart Generation
-matplotlib>=3.8.0
-seaborn>=0.13.0
-Pillow>=10.0.0
+matplotlib==3.10.8
+seaborn==0.13.2
+Pillow==12.0.0

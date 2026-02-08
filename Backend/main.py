@@ -1,15 +1,21 @@
 from fastapi import FastAPI, exceptions
 from fastapi.middleware.cors import CORSMiddleware
 from routers import articles, tweets, cleanup, charts, knowledge_base, research
+from config import ALLOWED_ORIGINS, HOST, PORT
 import uvicorn
 
-app = FastAPI()
+app = FastAPI(
+    title="RAG Pipeline API",
+    description="Backend API for RAG-based tweet generation and news analysis",
+    version="1.0.0"
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],  # Angular dev server
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
     
 app.include_router(articles.router)
@@ -19,5 +25,12 @@ app.include_router(charts.router)
 app.include_router(knowledge_base.router)
 app.include_router(research.router)
 
+
+@app.get("/")
+def health_check():
+    """Health check endpoint for HF Spaces"""
+    return {"status": "healthy", "message": "RAG Pipeline API is running"}
+
+
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host=HOST, port=PORT, reload=True)

@@ -25,7 +25,13 @@ dist/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Large model files
 *.gguf
+
+# Cache directories  
+.cache/
+NEWS_data/
 # Logs
 *.log
 
