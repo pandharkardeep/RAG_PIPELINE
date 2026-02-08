@@ -2,8 +2,8 @@
  * Development Environment Configuration
  */
 export const environment = {
-    production: false,
-    apiBaseUrl: 'http://localhost:8000',
+    production: true,
+    apiBaseUrl: 'https://pandharkrdeep-ai-news2social.hf.space',
     apiVersion: 'v1',
     endpoints: {
         articles: '/articles',
