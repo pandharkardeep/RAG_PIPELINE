@@ -22,8 +22,15 @@ export class News implements OnInit {
 
     ngOnInit(): void {
         this.route.queryParams.subscribe((params: any) => {
-            this.query = params.query;
-            this.limit = params.limit;
+            this.query = params.query || '';
+            this.limit = params.limit ? parseInt(params.limit, 10) : 10;
+
+            // Only fetch if we have a valid query
+            if (!this.query) {
+                console.warn('No query provided');
+                return;
+            }
+
             this.isLoading = true;
 
             this.news.getNews(this.query, this.limit).subscribe({
