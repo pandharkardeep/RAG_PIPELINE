@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface ExtractedData {
     comparisons: any[];
@@ -51,7 +52,7 @@ export interface ChartType {
     providedIn: 'root'
 })
 export class ChartService {
-    private baseUrl = 'http://localhost:8000/charts';
+    private baseUrl = `${environment.apiBaseUrl}/charts`;
 
     constructor(private http: HttpClient) { }
 
