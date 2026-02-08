@@ -1,0 +1,51 @@
+<nav class="top-navbar">
+    <div class="nav-container">
+        <!-- Logo -->
+        <a routerLink="/" class="nav-logo">
+            <span class="logo-icon">📰</span>
+            <span class="logo-text">Find News</span>
+        </a>
+        
+        <!-- Main Navigation -->
+        <ul class="nav-links">
+            <!-- Services Dropdown -->
+            <li class="nav-item has-dropdown" 
+                (mouseenter)="servicesOpen = true" 
+                (mouseleave)="servicesOpen = false">
+                <button class="nav-link dropdown-trigger" [class.active]="servicesOpen">
+                    Services
+                    <span class="dropdown-arrow" [class.open]="servicesOpen">▾</span>
+                </button>
+                
+                <div class="dropdown-menu" [class.open]="servicesOpen">
+                    <div class="dropdown-content">
+                        @for (service of services; track service.route) {
+                            <a [routerLink]="service.route" class="dropdown-item" (click)="closeServices()">
+                                <span class="item-icon">{{ service.icon }}</span>
+                                <div class="item-text">
+                                    <span class="item-title">{{ service.title }}</span>
+                                    <span class="item-subtitle">{{ service.subtitle }}</span>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </li>
+
+            <!-- About Us -->
+            <li class="nav-item">
+                <a href="#features" class="nav-link">About Us</a>
+            </li>
+
+            <!-- Contact Us -->
+            <li class="nav-item">
+                <a href="#cta" class="nav-link">Contact Us</a>
+            </li>
+        </ul>
+
+        <!-- CTA Button -->
+        <a routerLink="/home" class="nav-cta">
+            Get Started
+        </a>
+    </div>
+</nav>

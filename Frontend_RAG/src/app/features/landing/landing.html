@@ -1,0 +1,178 @@
+<app-top-navbar></app-top-navbar>
+<main class="landing">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg">
+            <div class="hero-orb orb-1"></div>
+            <div class="hero-orb orb-2"></div>
+            <div class="hero-orb orb-3"></div>
+            <div class="grid-overlay"></div>
+        </div>
+        <div class="hero-content">
+            <div class="badge">
+                <span class="badge-dot"></span>
+                Powered by <em class="ai-highlight">AI</em>
+            </div>
+            <h1 class="hero-title">
+                Discover News.<br>
+                <span class="gradient-text">Create Content.</span><br>
+                Share Instantly.
+            </h1>
+            <p class="hero-subtitle">
+                Transform any article into viral tweets, engaging threads, beautiful charts, 
+                and comprehensive research — all in seconds.
+            </p>
+            <div class="hero-cta">
+                <a routerLink="/home" class="btn-primary">
+                    <span class="btn-icon">🚀</span>
+                    Start Finding News
+                </a>
+                <a href="#features" class="btn-secondary">
+                    <span class="btn-icon">▶</span>
+                    See How It Works
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-value">10x</span>
+                    <span class="stat-label">Faster Content</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-value"><em class="ai-highlight">AI</em></span>
+                    <span class="stat-label">Powered</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-value">4+</span>
+                    <span class="stat-label">Output Formats</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section - Orbital Layout -->
+    <section class="features" id="features">
+        <div class="features-container">
+            <div class="section-header">
+                <span class="section-tag">Features</span>
+                <h2>Everything You Need</h2>
+            </div>
+            
+            <div class="orbital-layout">
+                <!-- Orbital rings -->
+                <div class="orbital-rings">
+                    <div class="ring ring-1"></div>
+                    <div class="ring ring-2"></div>
+                    <div class="ring ring-3"></div>
+                </div>
+                
+                <!-- Center logo -->
+                <div class="orbital-center">
+                    <div class="center-glow"></div>
+                    <div class="center-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" />
+                            <line x1="12" y1="22" x2="12" y2="15.5" />
+                            <polyline points="22,8.5 12,15.5 2,8.5" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Connector lines -->
+                <svg class="connectors" viewBox="0 0 900 650" preserveAspectRatio="xMidYMid meet">
+                    <!-- Lines from center to each card position -->
+                    <line x1="450" y1="325" x2="450" y2="100" class="connector" />
+                    <line x1="450" y1="325" x2="150" y2="325" class="connector" />
+                    <line x1="450" y1="325" x2="750" y2="325" class="connector" />
+                    <line x1="450" y1="325" x2="450" y2="560" class="connector" />
+                    <!-- Dots at card connection points -->
+                    <circle cx="450" cy="100" r="4" class="dot" />
+                    <circle cx="150" cy="325" r="4" class="dot" />
+                    <circle cx="750" cy="325" r="4" class="dot" />
+                    <circle cx="450" cy="560" r="4" class="dot" />
+                </svg>
+                
+                <!-- Feature cards positioned around -->
+                @for (feature of features; track feature.title) {
+                    <div class="feature-card" [attr.data-position]="feature.position">
+                        <div class="card-border" [style.--accent-color]="feature.color"></div>
+                        <div class="icon-badge" [style.background]="feature.color + '20'" [style.color]="feature.color">
+                            @switch (feature.icon) {
+                                @case ('twitter') {
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                    </svg>
+                                }
+                                @case ('thread') {
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                        <path d="M12 8v8M8 12h8"/>
+                                    </svg>
+                                }
+                                @case ('chart') {
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 20V10M12 20V4M6 20v-6"/>
+                                    </svg>
+                                }
+                                @case ('search') {
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"/>
+                                        <path d="m21 21-4.35-4.35"/>
+                                    </svg>
+                                }
+                            }
+                        </div>
+                        <h3>{{ feature.title }}</h3>
+                        <p>{{ feature.description }}</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="workflow">
+        <div class="section-container">
+            <div class="section-header light">
+                <span class="section-tag">How It Works</span>
+                <h2>Three Steps to <span class="highlight">Amazing Content</span></h2>
+            </div>
+            <div class="workflow-timeline">
+                @for (step of steps; track step.number) {
+                    <div class="workflow-step">
+                        <div class="step-connector">
+                            <div class="connector-line"></div>
+                            <div class="connector-dot">
+                                <span>{{ step.number }}</span>
+                            </div>
+                        </div>
+                        <div class="step-card">
+                            <div class="step-icon">{{ step.icon }}</div>
+                            <h3>{{ step.title }}</h3>
+                            <p>{{ step.description }}</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-bg">
+            <div class="cta-orb orb-1"></div>
+            <div class="cta-orb orb-2"></div>
+        </div>
+        <div class="cta-container">
+            <div class="cta-content">
+                <h2>Ready to Transform Your Content Workflow?</h2>
+                <p>Join creators who save hours every week with <em class="ai-highlight">AI</em>-powered content generation</p>
+                <a routerLink="/home" class="btn-cta">
+                    <span>Get Started Free</span>
+                    <span class="btn-arrow">→</span>
+                </a>
+            </div>
+        </div>
+    </section>
+</main>

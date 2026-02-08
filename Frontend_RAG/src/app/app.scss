@@ -9,12 +9,27 @@
         min-height: 100vh;
         transition: margin-left 0.3s ease;
         padding: 1rem;
+
+        &.full-width {
+            margin-left: 0;
+            padding: 0;
+        }
     }
 
     // When navbar is collapsed
     &.nav-collapsed {
         .main-content {
             margin-left: 70px;
+        }
+    }
+
+    // Landing page layout - no side margins
+    &.landing-layout {
+        background: #0a0a0f;
+
+        .main-content {
+            margin-left: 0;
+            padding: 0;
         }
     }
 }
@@ -24,6 +39,10 @@
     .app-layout {
         .main-content {
             margin-left: 70px;
+        }
+
+        &.landing-layout .main-content {
+            margin-left: 0;
         }
     }
 }

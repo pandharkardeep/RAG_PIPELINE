@@ -5,8 +5,13 @@ import { Home } from './features/home/home';
 import { ThreadFormatter } from './features/thread-formatter/thread-formatter';
 import { ChartExtractor } from './features/chart-extractor/chart-extractor';
 import { Research } from './features/research/research';
+import { Landing } from './features/landing/landing';
 
 export const routes: Routes = [
+    {
+        path: '',
+        component: Landing
+    },
     {
         path: 'home',
         component: Home

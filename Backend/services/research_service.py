@@ -10,7 +10,7 @@ import re
 import json
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
-
+from config import REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USER_AGENT
 # Reddit API
 try:
     import praw
@@ -82,6 +82,7 @@ class ResearchService:
     
     def scrape_reddit(
         self, 
+        query : str,
         subreddits: List[str], 
         days: int = 7,
         limit: int = 50
@@ -105,10 +106,14 @@ class ResearchService:
         
         for sub_name in subreddits:
             try:
-                subreddit = self.reddit.subreddit(sub_name)
+                results = self.reddit.subreddit(sub_name).search(
+                    query=query, 
+                    sort="top", 
+                    time_filter="week", 
+                    limit=limit)
                 
                 # Get top posts from the past week
-                for post in subreddit.top(time_filter='week', limit=limit):
+                for post in results:
                     post_data = {
                         'title': post.title,
                         'selftext': post.selftext[:500] if post.selftext else '',
@@ -470,11 +475,11 @@ Respond with JSON array of ideas."""
         
         # Auto-generate subreddit names if not provided
         if not subreddits:
-            subreddits = [niche.lower().replace(' ', '')]
+            subreddits = ["all"]
         
         # Step 1: Scrape Reddit
         print(f"📊 Researching: {niche}")
-        posts = self.scrape_reddit(subreddits, days)
+        posts = self.scrape_reddit(niche, subreddits, days)
         stats['reddit_posts'] = len(posts)
         
         # Step 2: Get Google Trends

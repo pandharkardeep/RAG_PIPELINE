@@ -1,6 +1,8 @@
-<div class="app-layout" [class.nav-collapsed]="navCollapsed">
-    <app-navbar (collapsedChange)="onNavCollapse($event)"></app-navbar>
-    <main class="main-content">
+<div class="app-layout" [class.nav-collapsed]="navCollapsed" [class.landing-layout]="isLandingPage">
+    @if (!isLandingPage) {
+        <app-navbar (collapsedChange)="onNavCollapse($event)"></app-navbar>
+    }
+    <main class="main-content" [class.full-width]="isLandingPage">
         <router-outlet></router-outlet>
     </main>
 </div>
