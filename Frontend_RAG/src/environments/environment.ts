@@ -3,7 +3,7 @@
  */
 export const environment = {
     production: true,
-    apiBaseUrl: 'https://pandharkrdeep-ai-news2social.hf.space',
+    apiBaseUrl: 'http://localhost:7860',
     apiVersion: 'v1',
     endpoints: {
         articles: '/articles',

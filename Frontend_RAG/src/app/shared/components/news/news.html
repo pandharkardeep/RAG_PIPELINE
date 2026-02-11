@@ -17,6 +17,18 @@
     </div>
   }
   
+  @if (!isLoading && newsData && newsData.data.length === 0) {
+    <div class="empty-state">
+      <div class="empty-state-icon">🔍</div>
+      <h2>Oops, nothing could be found!</h2>
+      <p>
+        This can happen if your query was a direct URL rather than a search term,
+        or the article you're looking for isn't widely covered or indexed across the web.
+        Try rephrasing your search with broader keywords.
+      </p>
+    </div>
+  }
+
   @for (News of newsData?.data; track News) {
     <div class="news-card">
       <h2>{{News.title}}</h2>

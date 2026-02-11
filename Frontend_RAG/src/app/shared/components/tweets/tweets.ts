@@ -7,10 +7,11 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @Component({
     selector: 'app-tweets',
-    imports: [CommonModule, MatCardModule, MatProgressSpinnerModule, MatChipsModule],
+    imports: [CommonModule, MatCardModule, MatProgressSpinnerModule, MatChipsModule, MatExpansionModule],
     templateUrl: './tweets.html',
     styleUrl: './tweets.scss',
 })

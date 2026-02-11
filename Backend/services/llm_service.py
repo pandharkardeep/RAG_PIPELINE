@@ -1,13 +1,19 @@
 
 from llama_cpp import Llama
+from huggingface_hub import hf_hub_download
 import os
 
 
 class LLMService:
     """
-    Service for generating tweets using local GGUF LLM models via llama-cpp-python
-    Uses on-demand loading for better resource management in deployed systems
+    Service for generating tweets using LLM models via llama-cpp-python
+    Auto-downloads model from HuggingFace Hub if not available locally
     """
+    
+    # HuggingFace Hub model configuration
+    HF_REPO_ID = "bartowski/Llama-3.2-3B-Instruct-GGUF"
+    HF_FILENAME = "Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+    
     def load_prompt(self, path: str) -> str:
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
@@ -15,17 +21,35 @@ class LLMService:
     def __init__(self, model_path: str = None):
         """
         Initialize the LLM service
+        Model will be downloaded from HuggingFace Hub on first use
         
         Args:
-            model_path (str): Path to the GGUF model file
+            model_path (str): Optional path to existing GGUF model file
         """
-        if model_path is None:
-            # Default to the Llama 3.2 model in the Backend directory
-            model_path = os.path.join(os.path.dirname(__file__), "..", "Llama-3.2-3B-Instruct-Q4_K_M.gguf")
-        
-        self.model_path = os.path.abspath(model_path)
+        self.model_path = model_path
         self.model = None
-        print(f"LLM Service initialized (model: {os.path.basename(self.model_path)})")
+        print(f"LLM Service initialized (will download from HF Hub if needed)")
+    
+    def _get_model_path(self) -> str:
+        """
+        Get the model path, downloading from HuggingFace Hub if needed
+        """
+        if self.model_path and os.path.exists(self.model_path):
+            return self.model_path
+        
+        # Download from HuggingFace Hub
+        print(f"Downloading model from HuggingFace Hub: {self.HF_REPO_ID}/{self.HF_FILENAME}")
+        try:
+            model_path = hf_hub_download(
+                repo_id=self.HF_REPO_ID,
+                filename=self.HF_FILENAME,
+                cache_dir=os.environ.get("HF_HOME", None)  # Use HF cache directory
+            )
+            print(f"✓ Model downloaded to: {model_path}")
+            return model_path
+        except Exception as e:
+            print(f"❌ Failed to download model: {e}")
+            raise
     
     def _load_model(self):
         """
@@ -33,10 +57,11 @@ class LLMService:
         This approach saves memory when the service is not actively being used
         """
         if self.model is None:
-            print(f"Loading model: {os.path.basename(self.model_path)}...")
+            model_path = self._get_model_path()
+            print(f"Loading model: {os.path.basename(model_path)}...")
             try:
                 self.model = Llama(
-                    model_path=self.model_path,
+                    model_path=model_path,
                     n_ctx=4096,  # Context window
                     n_threads=4,  # CPU threads
                     n_gpu_layers=0,  # Set > 0 if you have GPU support compiled
@@ -75,8 +100,9 @@ class LLMService:
                 context_section += f"Article {i}:\n{article_text}\nSource: {filename}\n\n"
             
             context_section += f"\nWrite a Twitter thread consisting of exactly {count} tweets about the topic below.\n {query}"
-            print(os.getcwd())
-            context_section += self.load_prompt("D:\\Projects\\RAG_PIPELINE\\Backend\\services\\prompt.txt")
+            # Use relative path for prompt file
+            prompt_path = os.path.join(os.path.dirname(__file__), "prompt.txt")
+            context_section += self.load_prompt(prompt_path)
             context_section += f"Output rules:\n- Return EXACTLY {count} tweets\n- Each tweet must be under {max_length} characters\n- Do NOT number tweets"
         else:
             print("Fallback to original prompt")
