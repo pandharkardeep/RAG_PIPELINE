@@ -23,7 +23,7 @@ class news_article_retrieval:
 
     def news_ingestion(self, limit: int = 10):
         """
-        Fetch news articles with fallback to cached CSV data
+        Fetch news articles from GoogleNews
         """
         
         try:
@@ -75,43 +75,14 @@ class news_article_retrieval:
                 raise Exception("No results from GoogleNews")
                 
         except Exception as e:
-            # Fallback to cached CSV data
-            print(f"Falling back to CSV data. Reason: {str(e)}")
-            try:
-                self.df = pd.read_csv('D:/Projects/RAG_PIPELINE/Backend/ignores/NewsArticles.csv')
-                
-                # Filter by query if possible (simple text search in title/description)
-                if 'title' in self.df.columns:
-                    df_filtered = self.df[self.df['title'].str.contains(self.query, case=False, na=False)]
-                    if len(df_filtered) > 0:
-                        self.df = df_filtered
-                
-                # Limit results
-                self.df = self.df.head(limit)
-                
-                # Convert to list of dicts
-                if 'link' in self.df.columns:
-                    self.df.loc[:, 'link'] = [re.split("&ved", str(link))[0] for link in self.df['link']]
-                self.df.drop(columns = ['media', 'date', 'datetime', 'img'], inplace = True)
-                articles = self.df.to_dict('records')
-                # print(self.df.to_json())
-                
-                return {
-                    "success": True,
-                    "data": articles,
-                    "count": len(articles),
-                    "source": "Cached CSV"
-                }
-            except Exception as csv_error:
-                # If CSV also fails, return empty result
-                print(f"CSV fallback also failed: {str(csv_error)}")
-                return {
-                    "success": False,
-                    "data": [],
-                    "count": 0,
-                    "error": "No data available",
-                    "source": "None"
-                }
+            print(f"News retrieval failed: {str(e)}")
+            return {
+                "success": False,
+                "data": [],
+                "count": 0,
+                "error": str(e),
+                "source": "None"
+            }
     
     def retrieve(self):
         try:
