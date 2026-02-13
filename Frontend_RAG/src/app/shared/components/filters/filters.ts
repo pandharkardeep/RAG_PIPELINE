@@ -128,6 +128,26 @@ export class Filters implements OnInit {
         this.emitFilters();
     }
 
+    addCustomSource(name: string, type: 'include' | 'exclude'): void {
+        const trimmed = name.trim();
+        if (!trimmed) return;
+
+        // Add to master list if not already present
+        if (!this.mediaSources.includes(trimmed)) {
+            this.mediaSources.push(trimmed);
+            this.mediaSources.sort();
+        }
+
+        // Select it in the appropriate list
+        if (type === 'include') {
+            this.addInclude(trimmed);
+            this.includeSearch = '';
+        } else {
+            this.addExclude(trimmed);
+            this.excludeSearch = '';
+        }
+    }
+
     clearAll(): void {
         this.selectedInclude = [];
         this.selectedExclude = [];

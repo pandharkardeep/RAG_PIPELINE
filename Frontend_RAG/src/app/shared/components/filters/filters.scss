@@ -299,6 +299,25 @@
     font-size: 0.85rem;
 }
 
+.dropdown-add-custom {
+    display: block;
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    border: none;
+    background: rgba(205, 173, 125, 0.08);
+    font-size: 0.85rem;
+    color: #8a7246;
+    cursor: pointer;
+    text-align: left;
+    font-weight: 500;
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: rgba(205, 173, 125, 0.2);
+        color: #6b5a32;
+    }
+}
+
 // Clear all button
 .clear-all-btn {
     display: block;

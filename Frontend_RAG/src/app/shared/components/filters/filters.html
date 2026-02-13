@@ -58,10 +58,15 @@
                     {{ source }}
                   </button>
                 }
-                @if (filteredIncludeSources.length === 0) {
+                @if (filteredIncludeSources.length === 0 && !includeSearch.trim()) {
                   <div class="dropdown-empty">No sources found</div>
                 }
               </div>
+              @if (includeSearch.trim()) {
+                <button class="dropdown-add-custom" (click)="addCustomSource(includeSearch, 'include'); $event.stopPropagation()">
+                  ＋ Add "{{ includeSearch.trim() }}" as custom source
+                </button>
+              }
             </div>
           }
         </div>
@@ -108,10 +113,15 @@
                     {{ source }}
                   </button>
                 }
-                @if (filteredExcludeSources.length === 0) {
+                @if (filteredExcludeSources.length === 0 && !excludeSearch.trim()) {
                   <div class="dropdown-empty">No sources found</div>
                 }
               </div>
+              @if (excludeSearch.trim()) {
+                <button class="dropdown-add-custom" (click)="addCustomSource(excludeSearch, 'exclude'); $event.stopPropagation()">
+                  ＋ Add "{{ excludeSearch.trim() }}" as custom source
+                </button>
+              }
             </div>
           }
         </div>
