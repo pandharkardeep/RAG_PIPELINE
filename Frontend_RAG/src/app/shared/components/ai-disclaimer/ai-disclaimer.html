@@ -1,0 +1,19 @@
+<!-- Floating AI Disclaimer -->
+<div class="floating-disclaimer" *ngIf="visible">
+    <mat-expansion-panel>
+        <mat-expansion-panel-header>
+            <mat-panel-title>
+                ⚠️ AI-Generated Content — Tap to learn more
+            </mat-panel-title>
+        </mat-expansion-panel-header>
+        <p>{{ bodyText }}</p>
+        <p>
+            If no results appear, you may have excluded too many news outlets or included too few in your filters.
+            Try broadening your source selection.
+        </p>
+        <p>
+            <strong>Always verify the information independently</strong> before sharing or publishing.
+            Cross-check facts, statistics, and claims with the original sources listed above.
+        </p>
+    </mat-expansion-panel>
+</div>

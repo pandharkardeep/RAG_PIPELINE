@@ -9,10 +9,12 @@ import pandas as pd
 from GoogleNews import GoogleNews
 class news_article_retrieval:
     
-    def __init__(self, query:str, limit:int, session_id:str = None):
+    def __init__(self, query:str, limit:int, session_id:str = None, include_sources: list = None, exclude_sources: list = None):
         self.query = query
         self.df = None
         self.session_id = session_id
+        self.include_sources = include_sources or []
+        self.exclude_sources = exclude_sources or []
         self.news_ingest = self.news_ingestion(limit)
 
     def get_data(self):
@@ -32,7 +34,19 @@ class news_article_retrieval:
             
             with redirect_stderr(f):
                 googleNews = GoogleNews(period='7d', lang='en')
-                googleNews.search(self.query)
+                
+                # Build the search query with source filters
+                search_query = self.query
+                if self.include_sources:
+                    source_filter = ' OR '.join([f'source:"{s}"' for s in self.include_sources])
+                    search_query = f"{search_query} {source_filter}"
+                if self.exclude_sources:
+                    exclude_filter = ' '.join([f'-source:"{s}"' for s in self.exclude_sources])
+                    search_query = f"{search_query} {exclude_filter}"
+                    print(search_query)
+                
+                print(f"GoogleNews query: {search_query}")
+                googleNews.search(search_query)
                 all_results = []
                 seen_titles = set()
                 # Try to get multiple pages, but stop if we hit rate limit
@@ -61,7 +75,8 @@ class news_article_retrieval:
                 self.df = pd.DataFrame(all_results).drop_duplicates(subset=['title'], keep='last').head(limit)
                 self.df.reset_index(drop=True, inplace=True)
                 self.df['link'] = [re.split("&ved", link)[0] for link in self.df['link']]
-                self.df.drop(columns = ['media', 'date', 'datetime', 'img'], inplace = True)
+                print(self.df.head())
+                #self.df.drop(columns = ['media', 'date', 'datetime', 'img'], inplace = True)
                 articles = self.df.to_dict('records')
                 
                 return {

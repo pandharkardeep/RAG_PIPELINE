@@ -2,6 +2,11 @@ export interface NewsArticle {
     title: string;
     link: string;
     category: string;
+    media: string;
+    date: string;
+    datetime: string;
+    desc: string;
+    img: string;
 }
 
 export interface NewsResponse {

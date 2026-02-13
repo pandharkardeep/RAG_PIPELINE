@@ -1,7 +1,8 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from typing import Optional, List
 import requests
 from config import PINECONE_KEY
 from GoogleNews import GoogleNews
@@ -26,6 +27,16 @@ article_cache = {
     "timestamp": None
 }
 
+# Known media sources - grows as new sources are discovered from fetched articles
+known_sources = set([
+    'BBC', 'CNN', 'Reuters', 'Al Jazeera', 'The Guardian', 'Fox News',
+    'The New York Times', 'The Washington Post', 'Associated Press',
+    'Bloomberg', 'CNBC', 'The Wall Street Journal', 'NPR', 'ABC News',
+    'NBC News', 'CBS News', 'Sky News', 'The Independent', 'The Telegraph',
+    'Financial Times', 'TechCrunch', 'The Verge', 'Wired', 'Ars Technica',
+    'The Hindu', 'Times of India', 'NDTV', 'India Today', 'Hindustan Times',
+])
+
 # Initialize services globally to avoid recreating them on each request
 try:
     embedder = emb_service()
@@ -40,13 +51,18 @@ except Exception as e:
     print(f"⚠ Warning: Could not initialize")
 
 @router.get("")
-def news_ingestion(query: str, limit: int = 10):
+def news_ingestion(
+    query: str,
+    limit: int = 10,
+    include_sources: Optional[List[str]] = Query(default=None, description="Only include articles from these media houses (e.g. BBC, CNN)"),
+    exclude_sources: Optional[List[str]] = Query(default=None, description="Exclude articles from these media houses (e.g. Fox News)")
+):
     """
     Fetch news articles, chunk them, generate embeddings, and store in Pinecone
     """
     global article_cache
     
-    nar = news_article_retrieval(query, limit)
+    nar = news_article_retrieval(query, limit, include_sources=include_sources, exclude_sources=exclude_sources)
     result = nar.get_ingestion()
     
     # Cache the result for export
@@ -58,12 +74,33 @@ def news_ingestion(query: str, limit: int = 10):
             "timestamp": datetime.now()
         }
         print(f"✓ Cached {len(article_cache['data'])} articles for query: {query}")
+        
+        # Auto-discover new media sources from fetched articles
+        for article in result.get('data', []):
+            media = article.get('media', '')
+            if media and media not in known_sources and not media.startswith('http'):
+                known_sources.add(media)
+                print(f"✓ Discovered new source: {media}")
     
     return result
 
+@router.get("/sources")
+def get_sources():
+    """
+    Get list of known media sources for filtering
+    """
+    return {
+        "sources": sorted(list(known_sources))
+    }
+
 @router.post("/ingest")
-def news_addition(query: str, limit: int = 10):
-    nar = news_article_retrieval(query, limit)
+def news_addition(
+    query: str,
+    limit: int = 10,
+    include_sources: Optional[List[str]] = Query(default=None, description="Only include articles from these media houses"),
+    exclude_sources: Optional[List[str]] = Query(default=None, description="Exclude articles from these media houses")
+):
+    nar = news_article_retrieval(query, limit, include_sources=include_sources, exclude_sources=exclude_sources)
     nar.retrieve()
     df = nar.get_data()
     ch = chunk()

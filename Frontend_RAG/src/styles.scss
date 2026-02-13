@@ -1,1 +1,82 @@
-/* You can add global styles to this file, and also import other style files */
+/* Queryflow — Global Styles & Theme Variables */
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* ===== Dark Theme (Default) ===== */
+body[data-theme="dark"] {
+    --bg-primary: #0a0a1a;
+    --bg-secondary: #12121f;
+    --bg-card: rgba(255, 255, 255, 0.04);
+    --bg-card-hover: rgba(255, 255, 255, 0.08);
+    --bg-glass: rgba(255, 255, 255, 0.06);
+    --bg-navbar: rgba(10, 10, 26, 0.88);
+
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --text-muted: rgba(255, 255, 255, 0.45);
+
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-card: rgba(255, 255, 255, 0.1);
+
+    --accent-indigo: #6366f1;
+    --accent-cyan: #22d3ee;
+    --accent-pink: #ec4899;
+    --accent-green: #22c55e;
+    --accent-blue: #3b82f6;
+
+    --glow-primary: rgba(99, 102, 241, 0.3);
+    --glow-cyan: rgba(34, 211, 238, 0.2);
+
+    --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --shadow-elevated: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+    --canvas-node: rgba(99, 102, 241, 0.6);
+    --canvas-edge: rgba(99, 102, 241, 0.35);
+    --canvas-pulse: rgba(34, 211, 238, 0.8);
+}
+
+/* ===== Light Theme ===== */
+body[data-theme="light"] {
+    --bg-primary: #f8f9fc;
+    --bg-secondary: #eef0f6;
+    --bg-card: rgba(255, 255, 255, 0.85);
+    --bg-card-hover: rgba(255, 255, 255, 1);
+    --bg-glass: rgba(255, 255, 255, 0.7);
+    --bg-navbar: rgba(248, 249, 252, 0.92);
+
+    --text-primary: #1a1a2e;
+    --text-secondary: rgba(26, 26, 46, 0.7);
+    --text-muted: rgba(26, 26, 46, 0.45);
+
+    --border-subtle: rgba(26, 26, 46, 0.08);
+    --border-card: rgba(26, 26, 46, 0.12);
+
+    --accent-indigo: #4f46e5;
+    --accent-cyan: #0891b2;
+    --accent-pink: #db2777;
+    --accent-green: #16a34a;
+    --accent-blue: #2563eb;
+
+    --glow-primary: rgba(79, 70, 229, 0.15);
+    --glow-cyan: rgba(8, 145, 178, 0.1);
+
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.06);
+    --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.1);
+
+    --canvas-node: rgba(79, 70, 229, 0.35);
+    --canvas-edge: rgba(79, 70, 229, 0.08);
+    --canvas-pulse: rgba(8, 145, 178, 0.6);
+}

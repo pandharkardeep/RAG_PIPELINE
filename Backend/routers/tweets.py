@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
+from typing import Optional, List
 from services.llm_service import LLMService
 from services.emb_service import emb_service
 from services.pinecone_service import PineconeService
@@ -34,7 +35,14 @@ except Exception as e:
 
 
 @router.get("/generate")
-def generate_tweets(query: str, count: int = 3, top_k: int = None, fetch_limit: int = None):
+def generate_tweets(
+    query: str,
+    count: int = 3,
+    top_k: int = None,
+    fetch_limit: int = None,
+    include_sources: Optional[List[str]] = Query(default=None, description="Only include articles from these media houses (e.g. BBC, CNN)"),
+    exclude_sources: Optional[List[str]] = Query(default=None, description="Exclude articles from these media houses (e.g. Fox News)")
+):
     """
     Generate tweets using enhanced RAG with dynamic article fetching
     
@@ -111,7 +119,7 @@ def generate_tweets(query: str, count: int = 3, top_k: int = None, fetch_limit: 
             "search_results": 0
         }
         
-        nar = news_article_retrieval(query=query, limit=fetch_limit, session_id=session_id)
+        nar = news_article_retrieval(query=query, limit=fetch_limit, session_id=session_id, include_sources=include_sources, exclude_sources=exclude_sources)
         ingestion_result = nar.get_ingestion()
         
         if not ingestion_result.get('success', False):

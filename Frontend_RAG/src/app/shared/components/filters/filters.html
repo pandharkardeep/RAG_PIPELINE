@@ -1,0 +1,128 @@
+<div class="filters-wrapper">
+  <!-- Toggle Header -->
+  <button class="filters-toggle" (click)="togglePanel()">
+    <span class="toggle-icon">🔧</span>
+    <span class="toggle-label">Source Filters</span>
+    @if (activeFilterCount > 0) {
+      <span class="filter-badge">{{ activeFilterCount }}</span>
+    }
+    <span class="chevron" [class.open]="isExpanded">▾</span>
+  </button>
+
+  <!-- Collapsible Panel -->
+  @if (isExpanded) {
+    <div class="filters-panel">
+
+      @if (isLoadingSources) {
+        <div class="sources-loading">Loading sources...</div>
+      }
+
+      <!-- Include Sources -->
+      <div class="filter-section">
+        <label class="filter-label">
+          <span class="label-icon">✅</span> Include Only From
+        </label>
+        <p class="filter-hint">Only articles from these sources will be fetched</p>
+
+        <!-- Selected chips -->
+        @if (selectedInclude.length > 0) {
+          <div class="chips-container">
+            @for (source of selectedInclude; track source) {
+              <span class="chip chip-include">
+                {{ source }}
+                <button class="chip-remove" (click)="removeInclude(source)">×</button>
+              </span>
+            }
+          </div>
+        }
+
+        <!-- Dropdown -->
+        <div class="dropdown-wrapper">
+          <button class="dropdown-trigger" (click)="toggleIncludeDropdown()">
+            <span>{{ selectedInclude.length > 0 ? 'Add more sources...' : 'Select sources to include...' }}</span>
+            <span class="chevron-sm" [class.open]="includeDropdownOpen">▾</span>
+          </button>
+
+          @if (includeDropdownOpen) {
+            <div class="dropdown-menu">
+              <input
+                class="dropdown-search"
+                type="text"
+                placeholder="Search sources..."
+                [(ngModel)]="includeSearch"
+                (click)="$event.stopPropagation()"
+              />
+              <div class="dropdown-options">
+                @for (source of filteredIncludeSources; track source) {
+                  <button class="dropdown-option" (click)="addInclude(source)">
+                    {{ source }}
+                  </button>
+                }
+                @if (filteredIncludeSources.length === 0) {
+                  <div class="dropdown-empty">No sources found</div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Exclude Sources -->
+      <div class="filter-section">
+        <label class="filter-label">
+          <span class="label-icon">🚫</span> Exclude Sources
+        </label>
+        <p class="filter-hint">Articles from these sources will be blocked</p>
+
+        <!-- Selected chips -->
+        @if (selectedExclude.length > 0) {
+          <div class="chips-container">
+            @for (source of selectedExclude; track source) {
+              <span class="chip chip-exclude">
+                {{ source }}
+                <button class="chip-remove" (click)="removeExclude(source)">×</button>
+              </span>
+            }
+          </div>
+        }
+
+        <!-- Dropdown -->
+        <div class="dropdown-wrapper">
+          <button class="dropdown-trigger" (click)="toggleExcludeDropdown()">
+            <span>{{ selectedExclude.length > 0 ? 'Add more sources...' : 'Select sources to exclude...' }}</span>
+            <span class="chevron-sm" [class.open]="excludeDropdownOpen">▾</span>
+          </button>
+
+          @if (excludeDropdownOpen) {
+            <div class="dropdown-menu">
+              <input
+                class="dropdown-search"
+                type="text"
+                placeholder="Search sources..."
+                [(ngModel)]="excludeSearch"
+                (click)="$event.stopPropagation()"
+              />
+              <div class="dropdown-options">
+                @for (source of filteredExcludeSources; track source) {
+                  <button class="dropdown-option" (click)="addExclude(source)">
+                    {{ source }}
+                  </button>
+                }
+                @if (filteredExcludeSources.length === 0) {
+                  <div class="dropdown-empty">No sources found</div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Clear All -->
+      @if (activeFilterCount > 0) {
+        <button class="clear-all-btn" (click)="clearAll()">
+          Clear All Filters
+        </button>
+      }
+    </div>
+  }
+</div>

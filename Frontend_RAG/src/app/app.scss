@@ -25,7 +25,8 @@
 
     // Landing page layout - no side margins
     &.landing-layout {
-        background: #0a0a0f;
+        background: var(--bg-primary, #0a0a1a);
+        transition: background-color 0.4s ease;
 
         .main-content {
             margin-left: 0;

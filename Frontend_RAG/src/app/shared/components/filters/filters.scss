@@ -1,0 +1,321 @@
+// Filters Component – Yellow/White Theme
+
+.filters-wrapper {
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+// Toggle button
+.filters-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(205, 173, 125, 0.08);
+    border: 1px solid rgba(205, 173, 125, 0.25);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #555;
+    transition: all 0.25s ease;
+
+    &:hover {
+        background: rgba(205, 173, 125, 0.15);
+        border-color: rgba(205, 173, 125, 0.4);
+    }
+
+    .toggle-icon {
+        font-size: 1rem;
+    }
+
+    .toggle-label {
+        flex: 1;
+        text-align: left;
+    }
+
+    .filter-badge {
+        background: #cdad7d;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0.15rem 0.55rem;
+        border-radius: 12px;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    .chevron {
+        font-size: 0.8rem;
+        transition: transform 0.25s ease;
+        color: #999;
+
+        &.open {
+            transform: rotate(180deg);
+        }
+    }
+}
+
+// Collapsible panel
+.filters-panel {
+    margin-top: 0.75rem;
+    padding: 1.25rem;
+    background: white;
+    border: 1px solid rgba(205, 173, 125, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    animation: slideDown 0.25s ease-out;
+}
+
+.sources-loading {
+    text-align: center;
+    padding: 0.6rem;
+    font-size: 0.82rem;
+    color: #999;
+    margin-bottom: 0.75rem;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Filter section
+.filter-section {
+    margin-bottom: 1.25rem;
+
+    &:last-of-type {
+        margin-bottom: 0.75rem;
+    }
+}
+
+.filter-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.25rem;
+
+    .label-icon {
+        font-size: 0.85rem;
+    }
+}
+
+.filter-hint {
+    font-size: 0.78rem;
+    color: #999;
+    margin: 0 0 0.6rem 0;
+}
+
+// Chips
+.chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    animation: chipIn 0.2s ease-out;
+
+    &.chip-include {
+        background: rgba(205, 173, 125, 0.15);
+        color: #8a7246;
+        border: 1px solid rgba(205, 173, 125, 0.35);
+    }
+
+    &.chip-exclude {
+        background: rgba(220, 80, 80, 0.08);
+        color: #b24444;
+        border: 1px solid rgba(220, 80, 80, 0.25);
+    }
+
+    .chip-remove {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        border: none;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 0.75rem;
+        line-height: 1;
+        padding: 0;
+        color: inherit;
+        transition: background 0.15s ease;
+
+        &:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+    }
+}
+
+@keyframes chipIn {
+    from {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+// Dropdown
+.dropdown-wrapper {
+    position: relative;
+}
+
+.dropdown-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    background: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #888;
+    transition: all 0.2s ease;
+
+    &:hover {
+        border-color: #cdad7d;
+        background: #fff;
+    }
+
+    .chevron-sm {
+        font-size: 0.7rem;
+        color: #aaa;
+        transition: transform 0.2s ease;
+
+        &.open {
+            transform: rotate(180deg);
+        }
+    }
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid rgba(205, 173, 125, 0.3);
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    animation: dropdownIn 0.2s ease-out;
+    overflow: hidden;
+}
+
+@keyframes dropdownIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-search {
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    border: none;
+    border-bottom: 1px solid #eee;
+    font-size: 0.85rem;
+    outline: none;
+    box-sizing: border-box;
+
+    &::placeholder {
+        color: #bbb;
+    }
+
+    &:focus {
+        border-bottom-color: #cdad7d;
+    }
+}
+
+.dropdown-options {
+    max-height: 180px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #ddd;
+        border-radius: 4px;
+    }
+}
+
+.dropdown-option {
+    display: block;
+    width: 100%;
+    padding: 0.55rem 0.85rem;
+    border: none;
+    background: none;
+    font-size: 0.85rem;
+    color: #444;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: rgba(205, 173, 125, 0.12);
+        color: #333;
+    }
+}
+
+.dropdown-empty {
+    padding: 0.85rem;
+    text-align: center;
+    color: #bbb;
+    font-size: 0.85rem;
+}
+
+// Clear all button
+.clear-all-btn {
+    display: block;
+    width: 100%;
+    padding: 0.6rem;
+    margin-top: 0.5rem;
+    background: none;
+    border: 1px dashed rgba(205, 173, 125, 0.4);
+    border-radius: 8px;
+    color: #b89a6a;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(205, 173, 125, 0.08);
+        border-color: #cdad7d;
+    }
+}

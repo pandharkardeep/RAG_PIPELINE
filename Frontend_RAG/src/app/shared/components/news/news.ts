@@ -17,6 +17,8 @@ export class News implements OnInit {
     limit: number = -1;
     isLoading: boolean = false;
     exportStatus: string = '';
+    includeSources: string[] = [];
+    excludeSources: string[] = [];
 
     constructor(private news: NewsService, private route: ActivatedRoute) { }
 
@@ -24,6 +26,14 @@ export class News implements OnInit {
         this.route.queryParams.subscribe((params: any) => {
             this.query = params.query || '';
             this.limit = params.count ? parseInt(params.count, 10) : 10;
+
+            // Read source filters from query params
+            this.includeSources = params.include_sources
+                ? (Array.isArray(params.include_sources) ? params.include_sources : [params.include_sources])
+                : [];
+            this.excludeSources = params.exclude_sources
+                ? (Array.isArray(params.exclude_sources) ? params.exclude_sources : [params.exclude_sources])
+                : [];
 
             // Only fetch if we have a valid query
             if (!this.query) {
@@ -33,7 +43,7 @@ export class News implements OnInit {
 
             this.isLoading = true;
 
-            this.news.getNews(this.query, this.limit).subscribe({
+            this.news.getNews(this.query, this.limit, this.includeSources, this.excludeSources).subscribe({
                 next: (res: NewsResponse) => {
                     this.newsData = res;
                     this.isLoading = false;

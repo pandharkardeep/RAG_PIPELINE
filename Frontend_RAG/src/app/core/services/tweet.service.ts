@@ -24,15 +24,22 @@ export class TweetService {
         query: string,
         count: number = 3,
         top_k: number = 5,
-        fetch_limit: number = 10
+        fetch_limit: number = 10,
+        includeSources?: string[],
+        excludeSources?: string[]
     ): Observable<TweetResponse> {
-        return this.http.get<TweetResponse>(this.apiUrl, {
-            params: {
-                query: query,
-                count: count,
-                top_k: top_k,
-                fetch_limit: fetch_limit
-            }
-        });
+        let params: any = {
+            query: query,
+            count: count,
+            top_k: top_k,
+            fetch_limit: fetch_limit
+        };
+        if (includeSources && includeSources.length > 0) {
+            params.include_sources = includeSources;
+        }
+        if (excludeSources && excludeSources.length > 0) {
+            params.exclude_sources = excludeSources;
+        }
+        return this.http.get<TweetResponse>(this.apiUrl, { params });
     }
 }

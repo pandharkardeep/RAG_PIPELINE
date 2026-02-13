@@ -1,46 +1,84 @@
-<app-top-navbar></app-top-navbar>
-<main class="landing">
-    <!-- Hero Section -->
+<app-top-navbar [isDarkMode]="isDarkMode" (themeToggle)="toggleTheme()"></app-top-navbar>
+<main class="landing" [class.light-mode]="!isDarkMode">
+
+    <!-- Theme Toggle FAB -->
+    <button class="theme-toggle-fab" (click)="toggleTheme()" [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span class="toggle-icon" [class.is-light]="!isDarkMode">
+            @if (isDarkMode) {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/>
+                    <line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+            } @else {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            }
+        </span>
+    </button>
+
+    <!-- Hero Section with Neural Network Canvas -->
     <section class="hero">
+        <div class="hero-canvas-container">
+            <canvas #neuralCanvas class="neural-canvas"></canvas>
+        </div>
         <div class="hero-bg">
             <div class="hero-orb orb-1"></div>
             <div class="hero-orb orb-2"></div>
             <div class="hero-orb orb-3"></div>
-            <div class="grid-overlay"></div>
         </div>
         <div class="hero-content">
-            <div class="badge">
+            <div class="badge animate-fade-in">
                 <span class="badge-dot"></span>
-                Powered by <em class="ai-highlight">AI</em>
+                <span class="badge-text">Powered by <em class="ai-gradient">Neural AI</em></span>
             </div>
-            <h1 class="hero-title">
-                Discover News.<br>
-                <span class="gradient-text">Create Content.</span><br>
-                Share Instantly.
+            <h1 class="hero-title animate-fade-in-delay-1">
+                <span class="title-line">Welcome to</span>
+                <span class="brand-name">
+                    <span class="brand-q">Q</span>uery<span class="brand-flow">flow</span>
+                </span>
             </h1>
-            <p class="hero-subtitle">
-                Transform any article into viral tweets, engaging threads, beautiful charts, 
-                and comprehensive research — all in seconds.
+            <p class="hero-subtitle animate-fade-in-delay-2">
+                AI-powered content intelligence. Transform any article into viral tweets,
+                engaging threads, beautiful charts, and comprehensive research — all in seconds.
             </p>
-            <div class="hero-cta">
+            <div class="hero-cta animate-fade-in-delay-3">
                 <a routerLink="/home" class="btn-primary">
-                    <span class="btn-icon">🚀</span>
-                    Start Finding News
+                    <span class="btn-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        </svg>
+                    </span>
+                    Get Started
+                    <span class="btn-shimmer"></span>
                 </a>
                 <a href="#features" class="btn-secondary">
                     <span class="btn-icon">▶</span>
-                    See How It Works
+                    Explore Features
                 </a>
             </div>
-            <div class="hero-stats">
+            <div class="hero-stats animate-fade-in-delay-4">
                 <div class="stat">
                     <span class="stat-value">10x</span>
                     <span class="stat-label">Faster Content</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat">
-                    <span class="stat-value"><em class="ai-highlight">AI</em></span>
-                    <span class="stat-label">Powered</span>
+                    <span class="stat-value">
+                        <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.26-2.88 4.35L12 11.25l-1.12-.9C9.4 9.26 8 7.95 8 6a4 4 0 0 1 4-4z"/>
+                            <path d="M20 18c0-2.76-3.58-5-8-5s-8 2.24-8 5"/>
+                            <circle cx="12" cy="18" r="4"/>
+                        </svg>
+                    </span>
+                    <span class="stat-label">Neural AI</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat">
@@ -51,53 +89,25 @@
         </div>
     </section>
 
-    <!-- Features Section - Orbital Layout -->
+    <!-- Features Section -->
     <section class="features" id="features">
         <div class="features-container">
             <div class="section-header">
-                <span class="section-tag">Features</span>
-                <h2>Everything You Need</h2>
+                <span class="section-tag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tag-icon">
+                        <polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5"/>
+                    </svg>
+                    Features
+                </span>
+                <h2>Everything You Need, <span class="highlight">Powered by AI</span></h2>
+                <p class="section-subtitle">Queryflow's neural engine transforms your content workflow</p>
             </div>
-            
-            <div class="orbital-layout">
-                <!-- Orbital rings -->
-                <div class="orbital-rings">
-                    <div class="ring ring-1"></div>
-                    <div class="ring ring-2"></div>
-                    <div class="ring ring-3"></div>
-                </div>
-                
-                <!-- Center logo -->
-                <div class="orbital-center">
-                    <div class="center-glow"></div>
-                    <div class="center-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" />
-                            <line x1="12" y1="22" x2="12" y2="15.5" />
-                            <polyline points="22,8.5 12,15.5 2,8.5" />
-                        </svg>
-                    </div>
-                </div>
 
-                <!-- Connector lines -->
-                <svg class="connectors" viewBox="0 0 900 650" preserveAspectRatio="xMidYMid meet">
-                    <!-- Lines from center to each card position -->
-                    <line x1="450" y1="325" x2="450" y2="100" class="connector" />
-                    <line x1="450" y1="325" x2="150" y2="325" class="connector" />
-                    <line x1="450" y1="325" x2="750" y2="325" class="connector" />
-                    <line x1="450" y1="325" x2="450" y2="560" class="connector" />
-                    <!-- Dots at card connection points -->
-                    <circle cx="450" cy="100" r="4" class="dot" />
-                    <circle cx="150" cy="325" r="4" class="dot" />
-                    <circle cx="750" cy="325" r="4" class="dot" />
-                    <circle cx="450" cy="560" r="4" class="dot" />
-                </svg>
-                
-                <!-- Feature cards positioned around -->
+            <div class="features-grid">
                 @for (feature of features; track feature.title) {
-                    <div class="feature-card" [attr.data-position]="feature.position">
-                        <div class="card-border" [style.--accent-color]="feature.color"></div>
-                        <div class="icon-badge" [style.background]="feature.color + '20'" [style.color]="feature.color">
+                    <div class="feature-card" [style.--card-accent]="feature.color" [style.animation-delay]="feature.delay">
+                        <div class="card-glow"></div>
+                        <div class="icon-badge" [style.--icon-color]="feature.color">
                             @switch (feature.icon) {
                                 @case ('twitter') {
                                     <svg viewBox="0 0 24 24" fill="currentColor">
@@ -125,8 +135,162 @@
                         </div>
                         <h3>{{ feature.title }}</h3>
                         <p>{{ feature.description }}</p>
+                        <div class="card-connector">
+                            <div class="connector-dot"></div>
+                            <div class="connector-line"></div>
+                        </div>
                     </div>
                 }
+            </div>
+        </div>
+    </section>
+
+    <!-- RAG Pipeline Section with RNN Background -->
+    <section class="pipeline-section">
+        <!-- RNN Background Animation -->
+        <div class="rnn-bg">
+            <svg class="rnn-network" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice">
+                <!-- Hidden state layers (RNN cells) -->
+                <g class="rnn-cells">
+                    <!-- Cell 1 -->
+                    <circle cx="200" cy="150" r="28" class="rnn-cell"/>
+                    <path d="M200 122 Q230 90 200 90 Q170 90 200 122" class="recurrent-loop" />
+                    <!-- Cell 2 -->
+                    <circle cx="400" cy="150" r="28" class="rnn-cell"/>
+                    <path d="M400 122 Q430 90 400 90 Q370 90 400 122" class="recurrent-loop loop-2" />
+                    <!-- Cell 3 -->
+                    <circle cx="600" cy="150" r="28" class="rnn-cell"/>
+                    <path d="M600 122 Q630 90 600 90 Q570 90 600 122" class="recurrent-loop loop-3" />
+                    <!-- Cell 4 -->
+                    <circle cx="800" cy="150" r="28" class="rnn-cell"/>
+                    <path d="M800 122 Q830 90 800 90 Q770 90 800 122" class="recurrent-loop loop-4" />
+                    <!-- Cell 5 -->
+                    <circle cx="1000" cy="150" r="28" class="rnn-cell"/>
+                    <path d="M1000 122 Q1030 90 1000 90 Q970 90 1000 122" class="recurrent-loop loop-5" />
+                </g>
+                <!-- Forward connections -->
+                <g class="rnn-connections">
+                    <line x1="228" y1="150" x2="372" y2="150" class="rnn-forward"/>
+                    <line x1="428" y1="150" x2="572" y2="150" class="rnn-forward forward-2"/>
+                    <line x1="628" y1="150" x2="772" y2="150" class="rnn-forward forward-3"/>
+                    <line x1="828" y1="150" x2="972" y2="150" class="rnn-forward forward-4"/>
+                </g>
+                <!-- Data flow pulses -->
+                <g class="rnn-pulses">
+                    <circle r="4" class="rnn-pulse pulse-1">
+                        <animateMotion dur="4s" repeatCount="indefinite" path="M228,150 L372,150"/>
+                    </circle>
+                    <circle r="4" class="rnn-pulse pulse-2">
+                        <animateMotion dur="4s" repeatCount="indefinite" begin="1s" path="M428,150 L572,150"/>
+                    </circle>
+                    <circle r="4" class="rnn-pulse pulse-3">
+                        <animateMotion dur="4s" repeatCount="indefinite" begin="2s" path="M628,150 L772,150"/>
+                    </circle>
+                    <circle r="4" class="rnn-pulse pulse-4">
+                        <animateMotion dur="4s" repeatCount="indefinite" begin="3s" path="M828,150 L972,150"/>
+                    </circle>
+                </g>
+                <!-- Hidden state labels -->
+                <g class="rnn-labels">
+                    <text x="200" y="155" class="cell-label">h₁</text>
+                    <text x="400" y="155" class="cell-label">h₂</text>
+                    <text x="600" y="155" class="cell-label">h₃</text>
+                    <text x="800" y="155" class="cell-label">h₄</text>
+                    <text x="1000" y="155" class="cell-label">h₅</text>
+                </g>
+            </svg>
+        </div>
+
+        <div class="pipeline-container">
+            <div class="section-header">
+                <span class="section-tag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tag-icon">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                    RAG Pipeline
+                </span>
+                <h2>From Document to <span class="highlight">Intelligent Answer</span></h2>
+                <p class="section-subtitle">Watch your data flow through Queryflow's neural pipeline</p>
+            </div>
+
+            <div class="pipeline-flow">
+                <!-- Step 1: Upload -->
+                <div class="pipeline-step">
+                    <div class="pipe-node">
+                        <div class="pipe-icon-wrapper">
+                            <span class="pipe-icon">📄</span>
+                        </div>
+                        <div class="pipe-ring"></div>
+                    </div>
+                    <h4 class="pipe-label">Upload Docs</h4>
+                    <p class="pipe-desc">Articles, PDFs, URLs</p>
+                </div>
+
+                <!-- Connector 1→2 -->
+                <div class="pipeline-connector">
+                    <div class="connector-track">
+                        <div class="connector-pulse"></div>
+                    </div>
+                    <svg class="connector-arrow" viewBox="0 0 20 20" fill="var(--accent-indigo)">
+                        <path d="M8 4l8 6-8 6V4z"/>
+                    </svg>
+                </div>
+
+                <!-- Step 2: Embedding -->
+                <div class="pipeline-step">
+                    <div class="pipe-node">
+                        <div class="pipe-icon-wrapper">
+                            <span class="pipe-icon">🧬</span>
+                        </div>
+                        <div class="pipe-ring"></div>
+                    </div>
+                    <h4 class="pipe-label">Neural Embedding</h4>
+                    <p class="pipe-desc">Vector representation</p>
+                </div>
+
+                <!-- Connector 2→3 -->
+                <div class="pipeline-connector">
+                    <div class="connector-track">
+                        <div class="connector-pulse"></div>
+                    </div>
+                    <svg class="connector-arrow" viewBox="0 0 20 20" fill="var(--accent-indigo)">
+                        <path d="M8 4l8 6-8 6V4z"/>
+                    </svg>
+                </div>
+
+                <!-- Step 3: Retrieval -->
+                <div class="pipeline-step">
+                    <div class="pipe-node">
+                        <div class="pipe-icon-wrapper">
+                            <span class="pipe-icon">🔍</span>
+                        </div>
+                        <div class="pipe-ring"></div>
+                    </div>
+                    <h4 class="pipe-label">Context Retrieval</h4>
+                    <p class="pipe-desc">Semantic search</p>
+                </div>
+
+                <!-- Connector 3→4 -->
+                <div class="pipeline-connector">
+                    <div class="connector-track">
+                        <div class="connector-pulse"></div>
+                    </div>
+                    <svg class="connector-arrow" viewBox="0 0 20 20" fill="var(--accent-indigo)">
+                        <path d="M8 4l8 6-8 6V4z"/>
+                    </svg>
+                </div>
+
+                <!-- Step 4: Generate -->
+                <div class="pipeline-step final-step">
+                    <div class="pipe-node">
+                        <div class="pipe-icon-wrapper">
+                            <span class="pipe-icon">🤖</span>
+                        </div>
+                        <div class="pipe-ring"></div>
+                    </div>
+                    <h4 class="pipe-label">Generate Answer</h4>
+                    <p class="pipe-desc">AI-powered output</p>
+                </div>
             </div>
         </div>
     </section>
@@ -134,8 +298,13 @@
     <!-- How It Works -->
     <section class="workflow">
         <div class="section-container">
-            <div class="section-header light">
-                <span class="section-tag">How It Works</span>
+            <div class="section-header">
+                <span class="section-tag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tag-icon">
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                    </svg>
+                    How It Works
+                </span>
                 <h2>Three Steps to <span class="highlight">Amazing Content</span></h2>
             </div>
             <div class="workflow-timeline">
@@ -159,20 +328,39 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="cta-section">
+    <section class="cta-section" id="cta">
+        <div class="cta-particles">
+            <div class="particle p-1"></div>
+            <div class="particle p-2"></div>
+            <div class="particle p-3"></div>
+            <div class="particle p-4"></div>
+            <div class="particle p-5"></div>
+            <div class="particle p-6"></div>
+        </div>
         <div class="cta-bg">
             <div class="cta-orb orb-1"></div>
             <div class="cta-orb orb-2"></div>
         </div>
         <div class="cta-container">
             <div class="cta-content">
-                <h2>Ready to Transform Your Content Workflow?</h2>
-                <p>Join creators who save hours every week with <em class="ai-highlight">AI</em>-powered content generation</p>
+                <h2>Ready to Transform Your <span class="cta-highlight">Content Workflow</span>?</h2>
+                <p>Join creators who save hours every week with <em class="ai-gradient">Queryflow's Neural AI</em> engine</p>
                 <a routerLink="/home" class="btn-cta">
-                    <span>Get Started Free</span>
+                    <span>Launch Queryflow</span>
                     <span class="btn-arrow">→</span>
                 </a>
             </div>
         </div>
     </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <div class="footer-content">
+            <span class="footer-brand">
+                <span class="brand-q">Q</span>uery<span class="brand-flow">flow</span>
+            </span>
+            <span class="footer-divider">·</span>
+            <span class="footer-text">AI-Powered Content Intelligence</span>
+        </div>
+    </footer>
 </main>

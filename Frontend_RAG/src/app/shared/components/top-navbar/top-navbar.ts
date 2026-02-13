@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
@@ -10,6 +10,9 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
     styleUrls: ['./top-navbar.scss']
 })
 export class TopNavbar {
+    @Input() isDarkMode: boolean = true;
+    @Output() themeToggle = new EventEmitter<void>();
+
     servicesOpen: boolean = false;
 
     services = [
@@ -46,4 +49,9 @@ export class TopNavbar {
     closeServices(): void {
         this.servicesOpen = false;
     }
+
+    onThemeToggle(): void {
+        this.themeToggle.emit();
+    }
 }
+

@@ -31,9 +31,26 @@
 
   @for (News of newsData?.data; track News) {
     <div class="news-card">
-      <h2>{{News.title}}</h2>
-      <a href="{{News.link}}" target="_blank">Read More</a>
-      <!-- <img [src]="News.photo_url" alt="{{News.title}}"> -->
+      @if (News.img && !News.img.includes('R0lGODlh')) {
+        <div class="card-image">
+          <img [src]="News.img" [alt]="News.title" loading="lazy" />
+        </div>
+      }
+      <div class="card-content">
+        <div class="card-meta">
+          @if (News.media) {
+            <span class="source-badge">{{ News.media }}</span>
+          }
+          @if (News.date) {
+            <span class="date-label">{{ News.date }}</span>
+          }
+        </div>
+        <h2>{{ News.title }}</h2>
+        @if (News.desc) {
+          <p class="card-desc">{{ News.desc }}</p>
+        }
+        <a href="{{ News.link }}" target="_blank">Read More →</a>
+      </div>
     </div>
   }
 </div>

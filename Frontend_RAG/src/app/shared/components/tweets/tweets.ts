@@ -7,11 +7,11 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatExpansionModule } from '@angular/material/expansion';
+import { AiDisclaimer } from '../ai-disclaimer/ai-disclaimer';
 
 @Component({
     selector: 'app-tweets',
-    imports: [CommonModule, MatCardModule, MatProgressSpinnerModule, MatChipsModule, MatExpansionModule],
+    imports: [CommonModule, MatCardModule, MatProgressSpinnerModule, MatChipsModule, AiDisclaimer],
     templateUrl: './tweets.html',
     styleUrl: './tweets.scss',
 })
@@ -24,6 +24,8 @@ export class Tweets implements OnInit {
     isLoading: boolean = false;
     errorMessage: string = '';
     cleanupStatus: string = '';
+    includeSources: string[] = [];
+    excludeSources: string[] = [];
 
     constructor(
         private tweetService: TweetService,
@@ -37,6 +39,13 @@ export class Tweets implements OnInit {
             this.count = parseInt(params.count) || 3;
             this.top_k = parseInt(params.top_k) || 5;
             this.fetch_limit = parseInt(params.fetch_limit) || 10;
+
+            this.includeSources = params.include_sources
+                ? (Array.isArray(params.include_sources) ? params.include_sources : [params.include_sources])
+                : [];
+            this.excludeSources = params.exclude_sources
+                ? (Array.isArray(params.exclude_sources) ? params.exclude_sources : [params.exclude_sources])
+                : [];
 
             if (this.query) {
                 this.loadTweets();
@@ -53,7 +62,9 @@ export class Tweets implements OnInit {
             this.query,
             this.count,
             this.top_k,
-            this.fetch_limit
+            this.fetch_limit,
+            this.includeSources,
+            this.excludeSources
         ).subscribe({
             next: (res: TweetResponse) => {
                 this.tweetData = res;

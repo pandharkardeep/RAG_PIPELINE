@@ -7,6 +7,7 @@
 /bazel-out
 *.pdf
 *.PDF
+.editorconfig
 # Node
 /node_modules
 npm-debug.log

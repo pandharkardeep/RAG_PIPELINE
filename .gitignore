@@ -21,6 +21,7 @@ wheels/
 *.egg
 response.txt
 *.gguf
+*.editorconfig
 # Virtual Environment
 venv/
 ENV/
