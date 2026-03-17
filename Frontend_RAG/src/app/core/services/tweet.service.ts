@@ -26,13 +26,15 @@ export class TweetService {
         top_k: number = 5,
         fetch_limit: number = 10,
         includeSources?: string[],
-        excludeSources?: string[]
+        excludeSources?: string[],
+        tone: string = 'sharp'
     ): Observable<TweetResponse> {
         let params: any = {
             query: query,
             count: count,
             top_k: top_k,
-            fetch_limit: fetch_limit
+            fetch_limit: fetch_limit,
+            tone: tone
         };
         if (includeSources && includeSources.length > 0) {
             params.include_sources = includeSources;

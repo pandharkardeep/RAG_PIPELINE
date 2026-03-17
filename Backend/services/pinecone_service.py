@@ -6,13 +6,13 @@ import re
 
 
 class PineconeService:
-    def __init__(self, index_name="news-articles", dimension=384):
+    def __init__(self, index_name="news-articles", dimension=2048):
         """
         Initialize Pinecone service
         
         Args:
             index_name (str): Name of the Pinecone index
-            dimension (int): Dimension of embeddings (384 for all-MiniLM-L6-v2)
+            dimension (int): Dimension of embeddings (2048 for nemoretriever-300m)
         """
         self.pc = Pinecone(api_key=PINECONE_KEY)
         self.index_name = index_name

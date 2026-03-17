@@ -107,44 +107,35 @@ RULES:
             return ExtractedData(source_url=url)
     
     def _llm_extract(self, article_text: str) -> ExtractedData:
-        """Use LLM to extract structured data using llama-cpp-python chat completion"""
+        """Use LLM to extract structured data via chat completion"""
         try:
-            # Load model if needed
-            self.llm_service._load_model()
-            
             # Build the prompt content
             prompt_content = self.EXTRACTION_PROMPT.format(article_text=article_text)
-            
-            # Use chat format for instruction-tuned models
-            # llama-cpp-python handles chat template internally via create_chat_completion
+
             messages = [
                 {"role": "system", "content": "You are a data extraction expert. Your goal is to identify and structure all numerical data, statistical insights, and key performance indicators from the provided news article."},
                 {"role": "user", "content": prompt_content}
             ]
-            
-            # Use llama-cpp-python's create_chat_completion API
-            response = self.llm_service.model.create_chat_completion(
+
+            # Use the generic chat_completion method (works with NVIDIA API)
+            generated_text = self.llm_service.chat_completion(
                 messages=messages,
-                max_tokens=2048,  # Increased to prevent JSON truncation
+                max_tokens=2048,
                 temperature=0.3,
                 top_p=0.9,
-                stop=["</s>", "<|eot_id|>", "<|end_of_text|>"]
             )
-            
-            # Extract generated text from response
-            generated_text = response["choices"][0]["message"]["content"].strip()
-            
-            print(f"Generated text (first 500 chars): {generated_text[:500]}")  # Debug logging
-            
+
+            print(f"Generated text (first 500 chars): {generated_text[:500]}")
+
             # Extract JSON from response
             json_str = self._extract_json(generated_text)
             if json_str:
                 return self._parse_json_response(json_str)
             else:
                 print(f"No JSON found in response: {generated_text[:300]}")
-            
+
             return ExtractedData()
-            
+
         except Exception as e:
             print(f"LLM extraction error: {e}")
             import traceback

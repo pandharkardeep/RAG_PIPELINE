@@ -138,7 +138,7 @@ async def generate_charts(request: GenerateRequest):
         
     except Exception as e:
         print(f"Chart generation error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Cannot build the chart")
 
 
 @router.post("/full-pipeline", response_model=FullPipelineResponse)

@@ -5,12 +5,9 @@ from pydantic import BaseModel
 from typing import Optional, List
 import requests
 from config import PINECONE_KEY
-from GoogleNews import GoogleNews
 from summarization.summarize_news import summarization
 import pandas as pd
-import sys
-import io, re
-from contextlib import redirect_stderr
+import io
 from datetime import datetime
 from services.news_article_retrieval import news_article_retrieval
 from services.chunk import chunk
@@ -81,6 +78,7 @@ def news_ingestion(
             if media and media not in known_sources and not media.startswith('http'):
                 known_sources.add(media)
                 print(f"✓ Discovered new source: {media}")
+
     
     return result
 

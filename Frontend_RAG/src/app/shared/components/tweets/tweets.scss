@@ -26,6 +26,58 @@
         }
     }
 
+    // Tone Selector
+    .tone-selector {
+        text-align: center;
+        margin-bottom: 1.5rem;
+
+        .tone-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.6rem;
+        }
+
+        .tone-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .tone-chip {
+            padding: 0.5rem 1.1rem;
+            border-radius: 25px;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: #555;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+
+            &:hover:not(.active):not(:disabled) {
+                border-color: #cdad7d;
+                color: #cdad7d;
+                transform: translateY(-1px);
+            }
+
+            &.active {
+                background: linear-gradient(135deg, #cdad7d, #b89a6a);
+                border-color: #cdad7d;
+                color: #fff;
+                box-shadow: 0 4px 12px rgba(205, 173, 125, 0.35);
+            }
+
+            &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+        }
+    }
+
     // Loading State
     .loading-container {
         display: flex;

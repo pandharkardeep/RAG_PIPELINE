@@ -26,6 +26,16 @@ export class Tweets implements OnInit {
     cleanupStatus: string = '';
     includeSources: string[] = [];
     excludeSources: string[] = [];
+    selectedTone: string = 'sharp';
+
+    toneOptions = [
+        { value: 'sharp', label: '🎯 Sharp', desc: 'Direct & punchy' },
+        { value: 'analytical', label: '🔬 Analytical', desc: 'Data-driven' },
+        { value: 'contrarian', label: '🔄 Contrarian', desc: 'Challenge norms' },
+        { value: 'optimistic', label: '🌟 Optimistic', desc: 'Highlight breakthroughs' },
+        { value: 'cautionary', label: '⚠️ Cautionary', desc: 'Hidden risks' },
+        { value: 'visionary', label: '🔮 Visionary', desc: 'Bold predictions' },
+    ];
 
     constructor(
         private tweetService: TweetService,
@@ -46,6 +56,7 @@ export class Tweets implements OnInit {
             this.excludeSources = params.exclude_sources
                 ? (Array.isArray(params.exclude_sources) ? params.exclude_sources : [params.exclude_sources])
                 : [];
+            this.selectedTone = params.tone || 'sharp';
 
             if (this.query) {
                 this.loadTweets();
@@ -64,7 +75,8 @@ export class Tweets implements OnInit {
             this.top_k,
             this.fetch_limit,
             this.includeSources,
-            this.excludeSources
+            this.excludeSources,
+            this.selectedTone
         ).subscribe({
             next: (res: TweetResponse) => {
                 this.tweetData = res;

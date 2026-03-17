@@ -317,22 +317,19 @@ Respond in JSON format:
 {{"pain_points": [...], "questions": [...], "content_gaps": [...]}}"""
 
         try:
-            if hasattr(self.llm_service, 'model') and self.llm_service.model:
-                self.llm_service._load_model()
-                response = self.llm_service.model.create_chat_completion(
-                    messages=[{"role": "user", "content": prompt}],
-                    max_tokens=1024,
-                    temperature=0.3
-                )
-                content = response["choices"][0]["message"]["content"]
-                
-                # Extract JSON
-                json_match = re.search(r'\{.*\}', content, re.DOTALL)
-                if json_match:
-                    return json.loads(json_match.group())
+            content = self.llm_service.chat_completion(
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=1024,
+                temperature=0.3,
+            )
+
+            # Extract JSON
+            json_match = re.search(r'\{.*\}', content, re.DOTALL)
+            if json_match:
+                return json.loads(json_match.group())
         except Exception as e:
             print(f"⚠ LLM analysis error: {e}")
-        
+
         return {'questions': [], 'pain_points': [], 'content_gaps': []}
     
     def generate_ideas(
@@ -421,30 +418,27 @@ Respond with JSON array of ideas."""
 
         ideas = []
         try:
-            if hasattr(self.llm_service, 'model') and self.llm_service.model:
-                self.llm_service._load_model()
-                response = self.llm_service.model.create_chat_completion(
-                    messages=[{"role": "user", "content": prompt}],
-                    max_tokens=1500,
-                    temperature=0.7
-                )
-                content = response["choices"][0]["message"]["content"]
-                
-                # Extract JSON array
-                json_match = re.search(r'\[.*\]', content, re.DOTALL)
-                if json_match:
-                    raw_ideas = json.loads(json_match.group())
-                    for idea in raw_ideas:
-                        ideas.append(ContentIdea(
-                            title=idea.get('title', 'Untitled'),
-                            description=idea.get('description', ''),
-                            content_type=idea.get('content_type', 'video'),
-                            confidence_score=0.70,
-                            sources=["llm_generated"]
-                        ))
+            content = self.llm_service.chat_completion(
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=1500,
+                temperature=0.7,
+            )
+
+            # Extract JSON array
+            json_match = re.search(r'\[.*\]', content, re.DOTALL)
+            if json_match:
+                raw_ideas = json.loads(json_match.group())
+                for idea in raw_ideas:
+                    ideas.append(ContentIdea(
+                        title=idea.get('title', 'Untitled'),
+                        description=idea.get('description', ''),
+                        content_type=idea.get('content_type', 'video'),
+                        confidence_score=0.70,
+                        sources=["llm_generated"]
+                    ))
         except Exception as e:
             print(f"⚠ LLM idea generation error: {e}")
-        
+
         return ideas
     
     def research(

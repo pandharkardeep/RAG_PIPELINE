@@ -1,91 +1,66 @@
-from sentence_transformers import SentenceTransformer
+"""
+Embedding Service — NVIDIA NeMo Retriever
+Uses nvidia/llama-3.2-nemoretriever-300m-embed-v1 via OpenAI-compatible API.
+Dimension: 2048
+"""
+
+from openai import OpenAI
+from config import NVIDIA_NEMOTRON_API_KEY
+
+# NVIDIA NIM endpoint (OpenAI-compatible)
+_NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
+_MODEL_ID = "nvidia/llama-3.2-nemoretriever-300m-embed-v1"
+_EMBEDDING_DIM = 2048
+
 
 class emb_service:
     def __init__(self):
         """
-        Initialize embedding service with Sentence Transformers model
-        Using all-MiniLM-L6-v2: lightweight, fast, optimized for semantic similarity
+        Initialize embedding service with NVIDIA NeMo Retriever model.
+        Uses the OpenAI-compatible NVIDIA NIM endpoint.
         """
-        self.model = SentenceTransformer('all-MiniLM-L6-v2')
-        self.embedding_dimension = 384
-    
+        if not NVIDIA_NEMOTRON_API_KEY:
+            raise RuntimeError("NVIDIA_NEMOTRON_API_KEY is not set in environment variables.")
+
+        self.client = OpenAI(
+            api_key=NVIDIA_NEMOTRON_API_KEY,
+            base_url=_NVIDIA_BASE_URL,
+        )
+        self.embedding_dimension = _EMBEDDING_DIM
+        print(f"✓ Embedding service initialized (model={_MODEL_ID}, dim={_EMBEDDING_DIM})")
+
     def generate_embeddings(self, text):
         """
-        Generate embeddings for given text
-        
+        Generate embeddings for given text.
+
         Args:
             text (str or list): Single text string or list of texts
-            
+
         Returns:
-            numpy.ndarray: Embedding vector(s)
+            list: For a single string  → a single embedding vector (list[float])
+                  For a list of strings → list of embedding vectors (list[list[float]])
         """
-        embeddings = self.model.encode(text)
-        return embeddings
-    
+        single_input = isinstance(text, str)
+        texts = [text] if single_input else list(text)
+
+        # NVIDIA NIM accepts batches up to ~50; chunk larger batches
+        all_embeddings = []
+        batch_size = 50
+
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i : i + batch_size]
+            response = self.client.embeddings.create(
+                input=batch,
+                model=_MODEL_ID,
+                encoding_format="float",
+                extra_body={"input_type": "query", "truncate": "NONE"},
+            )
+            # response.data is sorted by index
+            batch_embs = [item.embedding for item in sorted(response.data, key=lambda d: d.index)]
+            all_embeddings.extend(batch_embs)
+
+        return all_embeddings[0] if single_input else all_embeddings
+
     def get_dimension(self):
         """Return the dimension of embeddings"""
         return self.embedding_dimension
-    
-    def ingest_news_to_pinecone():
-        """
-        Main function to ingest news articles into Pinecone
-        """
-        # Step 1: Initialize services
-        chunker = chunk()
-        embedder = emb_service()
-        pinecone = PineconeService(
-            index_name="news-articles",
-            dimension=embedder.get_dimension()
-        )
-        
-        # Step 2: Create Pinecone index
-        pinecone.create_index(metric="cosine", cloud="aws", region="us-east-1")
-        
-        # Step 3: Chunk documents
-        chunks_data = chunker.textsplit()
-        
-        # Step 4: Generate embeddings
-        texts = [chunk_data['text'] for chunk_data in chunks_data]
-        
-        # Generate embeddings in batches for efficiency
-        batch_size = 32
-        all_embeddings = []
-        
-        for i in tqdm(range(0, len(texts), batch_size), desc="Embedding batches"):
-            batch_texts = texts[i:i + batch_size]
-            batch_embeddings = embedder.generate_embeddings(batch_texts)
-            all_embeddings.extend(batch_embeddings)
-        
-        
-        
-        # Step 5: Prepare vectors for Pinecone
-        vectors = []
-        
-        for idx, (chunk_data, embedding) in enumerate(zip(chunks_data, all_embeddings)):
-            vector_id = f"news_{chunk_data['doc_id']}_{chunk_data['chunk_id']}"
-            metadata = {
-                'text': chunk_data['text'],
-                'filename': chunk_data['filename'],
-                'chunk_id': chunk_data['chunk_id'],
-                'doc_id': chunk_data['doc_id']
-            }
-            vectors.append((vector_id, embedding.tolist(), metadata))
-        
-        # Upload to Pinecone
-        pinecone.upsert_vectors(vectors)
-        
-        
-        stats = pinecone.get_stats()
-        
-        
-        test_query = "construction projects and infrastructure development"
-        test_embedding = embedder.generate_embeddings(test_query)
-        results = pinecone.query_similar(test_embedding, top_k=3)
-        
-        print(f"\nTop 3 results for query: '{test_query}'")
-        for i, match in enumerate(results['matches'], 1):
-            print(f"\n{i}. Score: {match['score']:.4f}")
-            print(f"   File: {match['metadata']['filename']}")
-            print(f"   Text preview: {match['metadata']['text'][:200]}...")
-        
-        print("\n✓ All done! Your news articles are now in Pinecone.")

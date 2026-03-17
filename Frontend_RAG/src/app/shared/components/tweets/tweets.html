@@ -4,6 +4,23 @@
         <p class="query-text" *ngIf="query">Query: <strong>{{ query }}</strong></p>
     </div>
 
+    <!-- Tone Selector -->
+    <div class="tone-selector">
+        <p class="tone-label">Writing Tone</p>
+        <div class="tone-chips">
+            <button
+                *ngFor="let tone of toneOptions"
+                class="tone-chip"
+                [class.active]="selectedTone === tone.value"
+                [disabled]="isLoading"
+                (click)="selectedTone = tone.value; loadTweets()"
+                [title]="tone.desc"
+            >
+                {{ tone.label }}
+            </button>
+        </div>
+    </div>
+
     <!-- Loading Spinner -->
     <div class="loading-container" *ngIf="isLoading">
         <mat-spinner></mat-spinner>

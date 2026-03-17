@@ -1,96 +1,149 @@
 import requests
-from bs4 import BeautifulSoup
+import trafilatura
 import re, os
 import time, random
 import io
 import json
-from contextlib import redirect_stderr
 import pandas as pd
-from GoogleNews import GoogleNews
+from config import NEWSDATA_API_KEY
+
+NEWSDATA_LATEST_URL = "https://newsdata.io/api/1/latest"
+
+
 class news_article_retrieval:
-    
-    def __init__(self, query:str, limit:int, session_id:str = None, include_sources: list = None, exclude_sources: list = None):
+
+    def __init__(self, query: str, limit: int, session_id: str = None,
+                 include_sources: list = None, exclude_sources: list = None):
         self.query = query
         self.df = None
         self.session_id = session_id
         self.include_sources = include_sources or []
         self.exclude_sources = exclude_sources or []
+        self.valid_links = []
         self.news_ingest = self.news_ingestion(limit)
 
+    # ------------------------------------------------------------------ #
+    #  Accessors                                                           #
+    # ------------------------------------------------------------------ #
     def get_data(self):
         return self.df
 
     def get_ingestion(self):
         return self.news_ingest
 
+    def get_links(self):
+        return self.valid_links
+
+    # ------------------------------------------------------------------ #
+    #  Fetch articles from newsdata.io                                    #
+    # ------------------------------------------------------------------ #
     def news_ingestion(self, limit: int = 10):
         """
-        Fetch news articles from GoogleNews
+        Fetch the latest news articles from newsdata.io API.
+
+        Docs: https://newsdata.io/documentation/#latest-news
         """
-        
+        if not NEWSDATA_API_KEY:
+            return {
+                "success": False,
+                "data": [],
+                "count": 0,
+                "error": "NEWSDATA_API_KEY is not set in environment variables.",
+                "source": "None"
+            }
+
         try:
-            # Suppress HTTP error messages from GoogleNews library
-            f = io.StringIO()
-            
-            with redirect_stderr(f):
-                googleNews = GoogleNews(period='7d', lang='en')
-                
-                # Build the search query with source filters
-                search_query = self.query
-                if self.include_sources:
-                    source_filter = ' OR '.join([f'source:"{s}"' for s in self.include_sources])
-                    search_query = f"{search_query} {source_filter}"
-                if self.exclude_sources:
-                    exclude_filter = ' '.join([f'-source:"{s}"' for s in self.exclude_sources])
-                    search_query = f"{search_query} {exclude_filter}"
-                    print(search_query)
-                
-                print(f"GoogleNews query: {search_query}")
-                googleNews.search(search_query)
-                all_results = []
-                seen_titles = set()
-                # Try to get multiple pages, but stop if we hit rate limit
-                for i in range(1, 30):  # Reduced from 50 to 10 to avoid rate limits
-                    try:
-                        googleNews.getpage(i)
-                        result = googleNews.results()
-                        if not result:
-                            break
-                        for item in result:
-                            if item['title'] not in seen_titles:
-                                seen_titles.add(item['title'])
-                                all_results.append(item)
-                            if len(all_results) >= limit:
-                                break
-                        else:
-                            break 
-                     # Stop if no more results
-                        if len(all_results) >= limit:
-                            break
-                    except Exception:
-                        break  # Stop on any error (including rate limit)
-            
-            # If we got results, process them
-            if all_results:
-                self.df = pd.DataFrame(all_results).drop_duplicates(subset=['title'], keep='last').head(limit)
-                self.df.reset_index(drop=True, inplace=True)
-                self.df['link'] = [re.split("&ved", link)[0] for link in self.df['link']]
-                print(self.df.head())
-                #self.df.drop(columns = ['media', 'date', 'datetime', 'img'], inplace = True)
-                articles = self.df.to_dict('records')
-                
-                return {
-                    "success": True,
-                    "data": articles,
-                    "count": len(articles),
-                    "source": "GoogleNews"
+            all_results = []
+            seen_ids = set()
+            next_page = None          # cursor for pagination
+
+            while len(all_results) < limit:
+                params = {
+                    "apikey": NEWSDATA_API_KEY,
+                    "q": self.query,
+                    "language": "en",
+                    "size": min(10, limit - len(all_results)),  # max 10 per request
                 }
-            else:
-                # No results from GoogleNews, fall back to CSV
-                raise Exception("No results from GoogleNews")
-                
+
+                # Source filters — newsdata uses source_id (e.g. "bbc", "cnn")
+                # We accept human-friendly names and normalise them to lowercase ids.
+                if self.include_sources:
+                    params["domainurl"] = ",".join(
+                        [s.lower().replace(" ", "") for s in self.include_sources]
+                    )
+                if self.exclude_sources:
+                    params["excludedomain"] = ",".join(
+                        [s.lower().replace(" ", "") for s in self.exclude_sources]
+                    )
+
+                if next_page:
+                    params["page"] = next_page
+
+                print(f"[newsdata.io] Fetching: q={self.query!r} | page={next_page}")
+                response = requests.get(NEWSDATA_LATEST_URL, params=params, timeout=15)
+                response.raise_for_status()
+
+                payload = response.json()
+
+                if payload.get("status") != "success":
+                    raise Exception(f"newsdata.io error: {payload.get('results', payload)}")
+
+                articles = payload.get("results", [])
+                if not articles:
+                    print("[newsdata.io] No more results.")
+                    break
+
+                for item in articles:
+                    uid = item.get("article_id") or item.get("link")
+                    if uid and uid not in seen_ids:
+                        seen_ids.add(uid)
+                        all_results.append(item)
+                    if len(all_results) >= limit:
+                        break
+
+                next_page = payload.get("nextPage")
+                if not next_page:
+                    break  # no more pages
+
+            if not all_results:
+                raise Exception("No results returned from newsdata.io")
+
+            # ---- normalise to a flat DataFrame ---- #
+            normalised = []
+            for item in all_results[:limit]:
+                link = item.get("link", "")
+                self.valid_links.append(link)
+                normalised.append({
+                    "title":       item.get("title", ""),
+                    "link":        link,
+                    "media":       item.get("source_name", ""),
+                    "source_id":   item.get("source_id", ""),
+                    "source_url":  item.get("source_url", ""),
+                    "desc":        item.get("description", ""),
+                    "date":        item.get("pubDate", ""),
+                    "image_url":   item.get("image_url", ""),
+                    "category":    ", ".join(item.get("category") or []),
+                    "country":     ", ".join(item.get("country") or []),
+                    "language":    item.get("language", ""),
+                    "article_id":  item.get("article_id", ""),
+                })
+
+            self.df = pd.DataFrame(normalised)
+            self.df.drop_duplicates(subset=["title"], keep="last", inplace=True)
+            self.df.reset_index(drop=True, inplace=True)
+
+            print(f"[newsdata.io] Fetched {len(self.df)} articles.")
+            print(self.df[["title", "media", "date"]].head())
+
+            return {
+                "success": True,
+                "data": self.df.to_dict("records"),
+                "count": len(self.df),
+                "source": "newsdata.io"
+            }
+
         except Exception as e:
-            print(f"News retrieval failed: {str(e)}")
+            print(f"[newsdata.io] News retrieval failed: {e}")
             return {
                 "success": False,
                 "data": [],
@@ -98,71 +151,81 @@ class news_article_retrieval:
                 "error": str(e),
                 "source": "None"
             }
-    
+
+    # ------------------------------------------------------------------ #
+    #  Scrape full article content and save to disk                       #
+    # ------------------------------------------------------------------ #
     def retrieve(self):
         try:
-            latest_link = self.df['link']
-        except:
+            latest_link = self.df["link"]
+        except Exception:
             print(self.df)
-            raise Exception("LINK Column not found")
-        description = []
-        for i in latest_link:
+            raise Exception("LINK column not found in DataFrame")
 
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/131.0.0.0 Safari/537.36"
+            ),
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "DNT": "1",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
+            "Cache-Control": "max-age=0",
+        }
+
+        descriptions = []
+        for url in latest_link:
             try:
-                response = requests.get(i, timeout=10)
-
-                if response.status_code == 200:
-                    html_content = response.text
+                resp = requests.get(url, headers=headers, timeout=15)
+                if resp.status_code == 200:
+                    extracted = trafilatura.extract(
+                        resp.text, include_comments=False, include_tables=False
+                    )
+                    descriptions.append(extracted or "No content could be extracted.")
                 else:
-                    print(f"Failed to retrieve: {i} (Status code: {response.status_code})")
-                    description.append("Failed to retrieve the webpage.")
-                    continue  
-            
-                soup = BeautifulSoup(html_content, "html.parser")
-                paragraphs = soup.find_all("p")
-
-                page_description = " ".join([p.get_text() for p in paragraphs])
-                description.append(page_description)
-
+                    print(f"[retrieve] Failed: {url} (HTTP {resp.status_code})")
+                    descriptions.append("Failed to retrieve the webpage.")
             except requests.exceptions.RequestException as e:
-                print(f"Error retrieving {i}: {e}")
-                description.append("Failed to retrieve the webpage.")
-                continue 
-            
-            time.sleep(random.uniform(1, 3))
-        self.df['description'] = description
+                print(f"[retrieve] Error fetching {url}: {e}")
+                descriptions.append("Failed to retrieve the webpage.")
 
+            time.sleep(random.uniform(1, 3))
+
+        self.df["description"] = descriptions
+
+        # ---- persist to disk ---- #
         folder_name = "NEWS_data"
         os.makedirs(folder_name, exist_ok=True)
-
-        # Store filenames created for session manifest
         created_files = []
-        
+
         for index, row in self.df.iterrows():
-            # Include session_id in filename if provided
-            if self.session_id:
-                filename = f"{self.session_id}_description_{index + 1}.txt"
-            else:
-                filename = f"description_{index + 1}.txt"
-            
+            filename = (
+                f"{self.session_id}_description_{index + 1}.txt"
+                if self.session_id
+                else f"description_{index + 1}.txt"
+            )
             file_path = os.path.join(folder_name, filename)
             with open(file_path, "w", encoding="utf-8") as f:
-                f.write(row['description'])
+                f.write(row["description"])
             created_files.append(filename)
-        
-        # Create session manifest file if session_id is provided
+
         if self.session_id:
             manifest_data = {
                 "session_id": self.session_id,
                 "query": self.query,
                 "timestamp": time.time(),
                 "article_count": len(self.df),
-                "files": created_files
+                "files": created_files,
             }
             manifest_path = os.path.join(folder_name, f"session_{self.session_id}.json")
             with open(manifest_path, "w", encoding="utf-8") as f:
                 json.dump(manifest_data, f, indent=2)
             print(f"✓ Session manifest created: {manifest_path}")
-
-        #print("Descriptions have been saved in the 'NEWS_data' folder.")
-
