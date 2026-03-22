@@ -1,21 +1,67 @@
-<div class="home-container">
-  <h1 class="home-title">Find News</h1>
-  <p class="home-subtitle">Start finding all news based on the query</p>
-  
-  <div class="form-group">
-    <label for="query">Query</label>
-    <input type="text" id="query" name="query" [(ngModel)]="query" placeholder="Enter your search query(Should not be a link)">
-  </div>
-  
-  <div class="form-group">
-    <label for="numTweets">Number of Tweets/News(maximum 10)</label>
-    <input type="number" id="numTweets" name="numTweets" [(ngModel)]="numTweets" placeholder="3" min="1" max="10">
-  </div>
-  
-  <app-filters (filtersChanged)="onFiltersChanged($event)"></app-filters>
-  
-  <div class="button-group">
-    <button class="btn-primary" (click)="shownews()">Show News</button>
-    <button class="btn-secondary" (click)="showTweets()">Generate Tweets</button>
-  </div>
-</div>
+<main class="layout">
+  <app-global-header title="Research Hub"></app-global-header>
+
+  <section class="content">
+    <div class="bg-effects">
+      <div class="glow-1"></div>
+      <div class="glow-2"></div>
+    </div>
+
+    <div class="search-container">
+      <div class="search-card">
+        <div class="intro">
+          <span class="badge">New Search Engine</span>
+          <h2>Find News</h2>
+          <p>Start finding all news based on the query</p>
+        </div>
+
+        <form class="search-form">
+          <div class="form-group">
+            <label>Query</label>
+            <div class="input-wrapper">
+              <div class="icon-left">
+                <span class="material-symbols-outlined" data-icon="search">search</span>
+              </div>
+              <input placeholder="Enter topic, keyword, or trend..." type="text" [(ngModel)]="query" name="query"/>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Limit (Max 10)</label>
+              <div class="input-wrapper">
+                <input max="10" min="1" type="number" [(ngModel)]="numTweets" name="numTweets" />
+              </div>
+            </div>
+
+            <app-filters (filtersChanged)="onFiltersChanged($event)"></app-filters>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn-primary" (click)="shownews()">
+              <span class="material-symbols-outlined text-lg">newspaper</span>
+              Show News
+            </button>
+            <button type="button" class="btn-secondary" (click)="showTweets()">
+              <span class="material-symbols-outlined text-lg">auto_awesome</span>
+              Generate Tweets
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="status-bar">
+        <div class="status-left">
+          <span class="material-symbols-outlined text-[14px]">bolt</span>
+          Real-time indexing active
+        </div>
+        <div class="status-right">
+          <span class="link">Documentation</span>
+          <span class="link">API Keys</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <app-global-footer></app-global-footer>
+</main>

@@ -4,10 +4,12 @@ import { Router } from '@angular/router';
 import { NewsService } from '../../core/services/news.service';
 import { NewsArticle } from '../../core/models/news.model';
 import { Filters, SourceFilters } from '../../shared/components/filters/filters';
+import { GlobalHeader } from '../../shared/components/global-header/global-header';
+import { GlobalFooter } from '../../shared/components/global-footer/global-footer';
 
 @Component({
   selector: 'app-home',
-  imports: [FormsModule, Filters],
+  imports: [FormsModule, Filters, GlobalHeader, GlobalFooter],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })

@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { GlobalHeader } from '../../shared/components/global-header/global-header';
+import { GlobalFooter } from '../../shared/components/global-footer/global-footer';
 @Component({
     selector: 'app-thread-formatter',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, GlobalHeader, GlobalFooter],
     templateUrl: './thread-formatter.html',
     styleUrl: './thread-formatter.scss'
 })

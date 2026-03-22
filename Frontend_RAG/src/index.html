@@ -9,9 +9,90 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "error": "#ff6e84",
+            "on-tertiary-fixed-variant": "#6d104e",
+            "primary-container": "#9396ff",
+            "primary": "#a3a6ff",
+            "primary-fixed-dim": "#8387ff",
+            "tertiary-fixed": "#fd8bca",
+            "primary-dim": "#6063ee",
+            "tertiary-dim": "#eb7bba",
+            "tertiary-fixed-dim": "#ee7ebc",
+            "outline": "#6d758c",
+            "error-container": "#a70138",
+            "on-secondary": "#280072",
+            "on-tertiary-fixed": "#360024",
+            "secondary-dim": "#a68dfa",
+            "surface-container-low": "#091328",
+            "inverse-primary": "#494bd7",
+            "secondary-fixed": "#d8caff",
+            "on-tertiary-container": "#5e0042",
+            "surface": "#020617",
+            "surface-bright": "#1f2b49",
+            "secondary-container": "#4d329b",
+            "inverse-surface": "#faf8ff",
+            "on-primary": "#0f00a4",
+            "tertiary-container": "#fa88c8",
+            "primary-fixed": "#9396ff",
+            "on-surface-variant": "#a3aac4",
+            "on-primary-fixed": "#000000",
+            "outline-variant": "#40485d",
+            "on-primary-container": "#0a0081",
+            "tertiary": "#ff9dd1",
+            "on-error-container": "#ffb2b9",
+            "on-primary-fixed-variant": "#0e009d",
+            "on-secondary-container": "#d6c9ff",
+            "surface-tint": "#a3a6ff",
+            "secondary": "#a98ffd",
+            "on-secondary-fixed-variant": "#573da6",
+            "surface-container-high": "#141f38",
+            "secondary-fixed-dim": "#cbbaff",
+            "on-tertiary": "#6c0f4d",
+            "on-surface": "#dee5ff",
+            "surface-dim": "#020617",
+            "surface-container": "#0f1930",
+            "on-error": "#490013",
+            "surface-container-lowest": "#000000",
+            "on-background": "#dee5ff",
+            "background": "#020617",
+            "inverse-on-surface": "#4d556b",
+            "surface-container-highest": "#192540",
+            "on-secondary-fixed": "#3a1b88",
+            "error-dim": "#d73357",
+            "surface-variant": "#192540"
+          },
+          fontFamily: {
+            "headline": ["Manrope"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          },
+          borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          animation: {
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 6s ease-in-out infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-10px)' },
+            }
+          }
+        },
+      },
+    }
+  </script>
 </head>
-<body data-theme="dark">
+<body data-theme="dark" class="bg-surface text-on-surface font-body selection:bg-primary-container/30 tech-bg" data-mode="connect">
   <app-root></app-root>
 </body>
 </html>

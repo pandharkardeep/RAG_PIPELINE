@@ -1,28 +1,33 @@
-<nav class="navbar" [class.collapsed]="isCollapsed">
-    <div class="navbar-header">
-        <span class="logo" *ngIf="!isCollapsed">📰 QueryFlow</span>
-        <span class="logo-icon" *ngIf="isCollapsed">📰</span>
-        <button class="toggle-btn" (click)="toggleNavbar()">
-            {{ isCollapsed ? '→' : '←' }}
-        </button>
-    </div>
-
-    <ul class="nav-items">
-        @for (item of navItems; track item.route) {
-            <li>
-                <a [routerLink]="item.route" 
-                   routerLinkActive="active" 
-                   [routerLinkActiveOptions]="{exact: item.route === '/'}"
-                   class="nav-link"
-                   [title]="item.label">
-                    <span class="nav-icon">{{ item.icon }}</span>
-                    <span class="nav-label" *ngIf="!isCollapsed">{{ item.label }}</span>
-                </a>
-            </li>
-        }
-    </ul>
-
-    <div class="nav-footer" *ngIf="!isCollapsed">
-        <span class="version">v1.0.0</span>
-    </div>
+<aside class="bg-[#020617] h-screen w-64 fixed left-0 top-0 flex flex-col py-6 shadow-xl z-50 border-r border-white/5 transition-all duration-300" [class.w-20]="isCollapsed">
+<div class="px-6 mb-10 flex items-center gap-3 relative">
+<div class="w-8 h-8 min-w-[32px] rounded bg-primary flex items-center justify-center text-white cursor-pointer" (click)="toggleNavbar()">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">fluid</span>
+</div>
+<div [class.opacity-0]="isCollapsed" class="transition-opacity duration-200 overflow-hidden whitespace-nowrap">
+<h1 class="text-xl font-bold text-white font-headline leading-none">QueryFlow</h1>
+<p class="text-[10px] text-slate-500 font-medium tracking-widest uppercase mt-1">Precision Curator</p>
+</div>
+</div>
+<nav class="flex-grow space-y-1">
+  @for (item of navItems; track item.route) {
+    <a [routerLink]="item.route"
+       routerLinkActive #rla="routerLinkActive"
+       [routerLinkActiveOptions]="{exact: item.route === '/'}"
+       [title]="item.label"
+       [class]="rla.isActive ? 'bg-primary text-white rounded-md mx-2 flex items-center px-4 py-3 gap-3 transition-all duration-200 font-label text-sm font-medium tracking-wide' : 'text-slate-400 hover:text-white rounded-md mx-2 flex items-center px-4 py-3 gap-3 transition-all duration-200 font-label text-sm font-medium tracking-wide hover:bg-slate-800 active:scale-95'">
+      <span class="material-symbols-outlined min-w-[24px]">{{ item.icon }}</span>
+      <span [class.opacity-0]="isCollapsed" class="transition-opacity duration-200 whitespace-nowrap">{{ item.label }}</span>
+    </a>
+  }
 </nav>
+<div class="mt-auto border-t border-white/5 pt-4 space-y-1">
+<a class="text-slate-400 hover:text-white mx-2 flex items-center px-4 py-3 gap-3 transition-all duration-200 font-label text-sm font-medium tracking-wide hover:bg-slate-800 rounded-md" href="#">
+<span class="material-symbols-outlined min-w-[24px]">help</span>
+            <span [class.opacity-0]="isCollapsed" class="transition-opacity duration-200 whitespace-nowrap">Help</span>
+        </a>
+<a class="text-slate-400 hover:text-white mx-2 flex items-center px-4 py-3 gap-3 transition-all duration-200 font-label text-sm font-medium tracking-wide hover:bg-slate-800 rounded-md" href="#">
+<span class="material-symbols-outlined min-w-[24px]">logout</span>
+            <span [class.opacity-0]="isCollapsed" class="transition-opacity duration-200 whitespace-nowrap">Logout</span>
+        </a>
+</div>
+</aside>

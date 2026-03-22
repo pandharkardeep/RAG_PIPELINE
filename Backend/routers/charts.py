@@ -195,7 +195,7 @@ async def full_pipeline(request: FullPipelineRequest):
                     data_summary=result.data_summary,
                     source_data=result.source_data
                 ))
-        
+        print('ok')
         return FullPipelineResponse(
             success=True,
             extracted_data=data_dict,

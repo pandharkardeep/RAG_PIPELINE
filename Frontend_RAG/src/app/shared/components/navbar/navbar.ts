@@ -14,10 +14,10 @@ export class Navbar {
     @Output() collapsedChange = new EventEmitter<boolean>();
 
     navItems = [
-        { route: '/home', label: 'Home', icon: '🏠' },
-        { route: '/thread-formatter', label: 'Thread Formatter', icon: '🧵' },
-        { route: '/chart-extractor', label: 'Chart Extractor', icon: '📊' },
-        { route: '/research', label: 'Research', icon: '🔍' }
+        { route: '/home', label: 'Home', icon: 'home' },
+        { route: '/thread-formatter', label: 'Thread Formatter', icon: 'subject' },
+        { route: '/chart-extractor', label: 'Chart Extractor', icon: 'bar_chart' },
+        { route: '/research', label: 'Research', icon: 'travel_explore' }
     ];
 
     toggleNavbar(): void {

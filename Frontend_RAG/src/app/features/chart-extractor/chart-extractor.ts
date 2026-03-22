@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { NgxEchartsModule } from 'ngx-echarts';
 import { ChartService, ChartOutput, ExtractedData, ChartType } from '../../core/services/chart.service';
-
+import { GlobalHeader } from '../../shared/components/global-header/global-header';
+import { GlobalFooter } from '../../shared/components/global-footer/global-footer';
 @Component({
     selector: 'app-chart-extractor',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, NgxEchartsModule, GlobalHeader, GlobalFooter],
     templateUrl: './chart-extractor.html',
     styleUrl: './chart-extractor.scss'
 })
@@ -25,6 +27,26 @@ export class ChartExtractor implements OnInit {
     // Available chart types
     chartTypes: ChartType[] = [];
     selectedChartTypes: string[] = [];
+
+    // ECharts state
+    chartOptions: { [key: number]: any } = {};
+    echartsInstances: { [key: number]: any } = {};
+    
+    // Per-chart customizations
+    chartSettings: { [key: number]: { palette: string, title: string } } = {};
+    
+    palettes: { [name: string]: string[] } = {
+        default: ['#2E86AB', '#A23B72', '#F18F01', '#C73E1D', '#3B1F2B', '#44AF69', '#FCAB10', '#5C4D7D'],
+        oceanic: ['#0077b6', '#0096c7', '#48cae4', '#90e0ef', '#ade8f4', '#caf0f8'],
+        forest: ['#2d6a4f', '#40916c', '#52b788', '#74c69d', '#95d5b2', '#b7e4c7'],
+        sunset: ['#ff7b00', '#ff8800', '#ff9500', '#ffa200', '#ffaa00', '#ffb700'],
+        india:  ['#FF9933', '#138808', '#000080', '#FF8C00', '#006400'],
+        monochrome: ['#111111', '#333333', '#555555', '#777777', '#999999', '#bbbbbb'],
+        pastel: ['#fd7f6f', '#7eb0d5', '#b2e061', '#bd7ebe', '#ffb55a', '#ffee65', '#beb9db', '#fdcce5', '#8bd3c7']
+    };
+
+    // Available palettes for UI iteration
+    availablePalettes = Object.keys(this.palettes);
 
     // UI state
     isLoading: boolean = false;
@@ -112,6 +134,8 @@ export class ChartExtractor implements OnInit {
                     this.hasCharts = true;
                     this.successMessage = response.message;
                     this.activeTab = 'charts';
+                    this.initializeChartSettings();
+                    this.updateECharts();
                 } else {
                     this.errorMessage = response.message || 'No charts could be generated';
                 }
@@ -147,6 +171,8 @@ export class ChartExtractor implements OnInit {
                     this.hasCharts = response.charts.length > 0;
                     this.successMessage = response.message;
                     this.activeTab = 'charts';
+                    this.initializeChartSettings();
+                    this.updateECharts();
                 } else {
                     this.errorMessage = response.message || 'Pipeline failed';
                 }
@@ -159,13 +185,119 @@ export class ChartExtractor implements OnInit {
         });
     }
 
+    initializeChartSettings(): void {
+        this.chartSettings = {};
+        this.generatedCharts.forEach((chart, index) => {
+            this.chartSettings[index] = {
+                palette: 'default',
+                title: chart.caption.split(':')[0] || 'Chart'
+            };
+        });
+    }
+
+    updateECharts(): void {
+        this.chartOptions = {};
+
+        this.generatedCharts.forEach((chart, index) => {
+            const settings = this.chartSettings[index] || { palette: 'default', title: 'Chart' };
+            const colors = this.palettes[settings.palette] || this.palettes['default'];
+
+            let option: any = {
+                color: colors,
+                tooltip: { trigger: 'item' },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        saveAsImage: { name: `chart_${index + 1}_${chart.chart_type}` }
+                    }
+                },
+                title: {
+                    text: settings.title,
+                    left: 'center'
+                },
+                legend: {
+                    top: 'bottom'
+                }
+            };
+
+            const sourceData = chart.source_data || [];
+            
+            if (chart.chart_type === 'bar' || chart.chart_type === 'grouped_bar') {
+                const xAxisData = sourceData.map(item => Object.values(item)[0]);
+                const seriesData = sourceData.map(item => Object.values(item)[1]);
+                option.xAxis = { type: 'category', data: xAxisData, axisLabel: { interval: 0, rotate: 30 } };
+                option.yAxis = { type: 'value' };
+                option.series = [{ data: seriesData, type: 'bar' }];
+            } else if (chart.chart_type === 'horizontal_bar') {
+                const yAxisData = sourceData.map(item => Object.values(item)[0]);
+                const seriesData = sourceData.map(item => Object.values(item)[1]);
+                option.xAxis = { type: 'value' };
+                option.yAxis = { type: 'category', data: yAxisData };
+                option.grid = { left: '3%', right: '4%', bottom: '3%', containLabel: true };
+                option.series = [{ data: seriesData, type: 'bar' }];
+            } else if (chart.chart_type === 'pie') {
+                const pieData = sourceData.map(item => ({ name: Object.values(item)[0], value: Object.values(item)[1] }));
+                option.series = [{ type: 'pie', radius: '50%', data: pieData }];
+            } else if (chart.chart_type === 'line') {
+                const xAxisData = sourceData.map(item => Object.values(item)[0]);
+                const seriesData = sourceData.map(item => Object.values(item)[1]);
+                option.xAxis = { type: 'category', data: xAxisData };
+                option.yAxis = { type: 'value' };
+                option.series = [{ data: seriesData, type: 'line', smooth: true }];
+            } else if (chart.chart_type === 'big_number') {
+                // Approximate a big number by drawing large text in a simple gauge or pie
+                // Fallback, we'll just display a simple pie chart of the numbers if any exist
+                if(sourceData.length > 0) {
+                     const pieData = sourceData.map(item => ({ name: Object.values(item)[0], value: Object.values(item)[1] }));
+                     option.series = [{ type: 'pie', radius: ['40%', '70%'], data: pieData }];
+                }
+            }
+
+            this.chartOptions[index] = option;
+            
+            // Re-apply option directly if the instance is already initialized
+            const ec = this.echartsInstances[index];
+            if (ec) {
+                ec.setOption(option, true);
+            }
+        });
+    }
+
+    onChartSettingChange(index: number) {
+        this.updateECharts();
+    }
+
+    onChartInit(ec: any, index: number) {
+        this.echartsInstances[index] = ec;
+    }
+
     downloadChart(chart: ChartOutput, index: number): void {
-        const filename = `chart_${index + 1}_${chart.chart_type}.png`;
-        this.chartService.downloadChart(chart.png_base64, filename);
+        const ec = this.echartsInstances[index];
+        if (ec) {
+            const url = ec.getDataURL({ type: 'png', backgroundColor: '#fff', pixelRatio: 2 });
+            const filename = `chart_${index + 1}_${chart.chart_type}.png`;
+            // ChartService already takes base64 without data type snippet
+            const b64 = url.includes(',') ? url.split(',')[1] : url;
+            this.chartService.downloadChart(b64, filename);
+        } else {
+            console.error("EChart instance not ready, attempting fallback...");
+            const filename = `chart_${index + 1}_${chart.chart_type}.png`;
+            this.chartService.downloadChart(chart.png_base64, filename);
+        }
     }
 
     downloadAllCharts(): void {
-        this.chartService.downloadAllAsZip(this.generatedCharts);
+        // Build updated base64 instances
+        const newCharts = this.generatedCharts.map((c, index) => {
+            const ec = this.echartsInstances[index];
+            if (ec) {
+               const url = ec.getDataURL({ type: 'png', backgroundColor: '#fff', pixelRatio: 2 });
+               return { ...c, png_base64: url.includes(',') ? url.split(',')[1] : url };
+            }
+            return c;
+        });
+
+        this.chartService.downloadAllAsZip(newCharts);
     }
 
     copyCaption(caption: string): void {
@@ -194,6 +326,9 @@ export class ChartExtractor implements OnInit {
         this.selectedChartTypes = [];
         this.activeTab = 'input';
         this.expandedChartData.clear();
+        this.echartsInstances = {};
+        this.chartOptions = {};
+        this.chartSettings = {};
     }
 
     toggleChartType(typeId: string): void {
@@ -216,7 +351,9 @@ export class ChartExtractor implements OnInit {
     getChartImageUrl(base64: string): string {
         return `data:image/png;base64,${base64}`;
     }
-
+    toggleDarkMode() {
+        document.documentElement.classList.toggle('dark');
+    }
     toggleDataPreview(index: number): void {
         if (this.expandedChartData.has(index)) {
             this.expandedChartData.delete(index);
