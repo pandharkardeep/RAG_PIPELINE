@@ -5,7 +5,7 @@
 
     .main-content {
         flex: 1;
-        margin-left: 0;
+        margin-left: 16rem;
         min-height: 100vh;
         transition: margin-left 0.3s ease;
         padding: 0;
@@ -19,7 +19,7 @@
     // When navbar is collapsed
     &.nav-collapsed {
         .main-content {
-            margin-left: 0;
+            margin-left: 5rem;
         }
     }
 
@@ -39,7 +39,7 @@
 @media (max-width: 768px) {
     .app-layout {
         .main-content {
-            margin-left: 0;
+            margin-left: 0 !important;
         }
 
         &.landing-layout .main-content {

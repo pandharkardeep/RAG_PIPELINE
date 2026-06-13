@@ -19,7 +19,7 @@ class LLMService:
 
     # NVIDIA NIM endpoint
     _BASE_URL = "https://integrate.api.nvidia.com/v1"
-    _MODEL_ID = "deepseek-ai/deepseek-v3.2"
+    _MODEL_ID = "nvidia/nemotron-3-ultra-550b-a55b"
 
     # ─── Banned Phrases ──────────────────────────────────────────────
     BANNED_PHRASES = [

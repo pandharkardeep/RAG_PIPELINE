@@ -9,7 +9,7 @@ from config import NVIDIA_NEMOTRON_API_KEY
 
 # NVIDIA NIM endpoint (OpenAI-compatible)
 _NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
-_MODEL_ID = "nvidia/llama-3.2-nemoretriever-300m-embed-v1"
+_MODEL_ID = "nvidia/nemotron-3-ultra-550b-a55b"
 _EMBEDDING_DIM = 2048
 
 
